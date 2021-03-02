@@ -1,0 +1,14 @@
+target/
+log/
+files/
+
+# Eclipse artifacts
+.project
+.settings
+
+#Editor artifacts
+*~
+
+# Boot records
+boot*.xml
+i*.xml
