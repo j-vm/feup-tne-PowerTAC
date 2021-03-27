@@ -3,8 +3,8 @@ import threading
 from time import sleep
 
 PATH_SERVER = "server"
-PATH_BROKERS = "brokers/TUC_TAC"
 AGENTS = "default-broker,TUC_TAC"
+# Key: Agent's name. Value: [Agent's path, Binaries]
 AGENT_INFO = {"TUC_TAC": ["brokers/TUC_TAC", "TUC_TAC_2020.jar"]}
 SERVER_BOOT_TIME = 10
 
