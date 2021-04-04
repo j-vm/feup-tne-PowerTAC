@@ -1,0 +1,60 @@
+1705 INFO  core.BrokerRunner: Starting session 1
+1708 INFO  core.BrokerPropertiesService: adding broker.properties
+1709 WARN  core.BrokerPropertiesService: broker.properties not found: java.io.FileNotFoundException: broker.properties (No such file or directory)
+1718 INFO  core.BrokerPropertiesService: Validating resource jar:file:/home/suspect/Desktop/feup-tne-PowerTAC/brokers/TUC_TAC/TUC_TAC_2020.jar!/config/broker.properties
+1719 INFO  core.BrokerPropertiesService: loading config from jar:file:/home/suspect/Desktop/feup-tne-PowerTAC/brokers/TUC_TAC/TUC_TAC_2020.jar!/config/broker.properties
+1812 INFO  core.PowerTacBroker: Register PortfolioManagerService.handleMessage(TariffRevoke)
+1812 INFO  core.PowerTacBroker: Register PortfolioManagerService.handleMessage(BalancingControlEvent)
+1813 INFO  core.PowerTacBroker: Register PortfolioManagerService.handleMessage(TariffStatus)
+1813 INFO  core.PowerTacBroker: Register PortfolioManagerService.handleMessage(CustomerBootstrapData)
+1813 INFO  core.PowerTacBroker: Register PortfolioManagerService.handleMessage(TariffSpecification)
+1813 INFO  core.PowerTacBroker: Register PortfolioManagerService.handleMessage(TariffTransaction)
+1813 INFO  core.PowerTacBroker: Register ContextManagerService.handleMessage(Properties)
+1814 INFO  core.PowerTacBroker: Register ContextManagerService.handleMessage(Competition)
+1814 INFO  core.PowerTacBroker: Register ContextManagerService.handleMessage(DistributionReport)
+1814 INFO  core.PowerTacBroker: Register ContextManagerService.handleMessage(CashPosition)
+1814 INFO  core.PowerTacBroker: Register ContextManagerService.handleMessage(BankTransaction)
+1816 INFO  core.PowerTacBroker: Register MarketManagerService.handleMessage(Orderbook)
+1816 INFO  core.PowerTacBroker: Register MarketManagerService.handleMessage(MarketTransaction)
+1816 INFO  core.PowerTacBroker: Register MarketManagerService.handleMessage(MarketPosition)
+1816 INFO  core.PowerTacBroker: Register MarketManagerService.handleMessage(WeatherForecast)
+1816 INFO  core.PowerTacBroker: Register MarketManagerService.handleMessage(WeatherReport)
+1816 INFO  core.PowerTacBroker: Register MarketManagerService.handleMessage(BalanceReport)
+1816 INFO  core.PowerTacBroker: Register MarketManagerService.handleMessage(Competition)
+1816 INFO  core.PowerTacBroker: Register MarketManagerService.handleMessage(BalancingTransaction)
+1817 INFO  core.PowerTacBroker: Register MarketManagerService.handleMessage(ClearedTrade)
+1817 INFO  core.PowerTacBroker: Register MarketManagerService.handleMessage(MarketBootstrapData)
+1817 INFO  core.PowerTacBroker: Register MarketManagerService.handleMessage(CapacityTransaction)
+1817 INFO  core.PowerTacBroker: Register MarketManagerService.handleMessage(DistributionTransaction)
+1817 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(SimEnd)
+1817 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(SimStart)
+1817 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(SimResume)
+1817 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(BrokerAccept)
+1817 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(Competition)
+1817 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(SimPause)
+1817 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(TimeslotComplete)
+1817 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(TimeslotUpdate)
+1962 ERROR core.JmsManagementService: javax.jms.JMSException: Could not connect to broker URL: tcp://localhost:61616. Reason: java.net.ConnectException: Connection refused (Connection refused)
+1962 INFO  core.JmsManagementService: registerMessageListener(TUC_TAC, org.powertac.samplebroker.core.BrokerMessageReceiver@61ab89b0)
+1969 INFO  core.PowerTacBroker: Listening on queue TUC_TAC
+1979 INFO  core.MessageDispatcher: sending text: 
+<broker-authentication username="TUC_TAC" password="secret" brokerTime="1617561833752"/>
+1983 INFO  core.PowerTacBroker: log attempt failed org.springframework.jms.UncategorizedJmsException: Uncategorized exception occurred during JMS processing; nested exception is javax.jms.JMSException: Could not connect to broker URL: tcp://localhost:61616. Reason: java.net.ConnectException: Connection refused (Connection refused)
+17984 INFO  core.MessageDispatcher: sending text: 
+<broker-authentication username="TUC_TAC" password="secret" brokerTime="1617561849765"/>
+17987 INFO  core.PowerTacBroker: log attempt failed org.springframework.jms.UncategorizedJmsException: Uncategorized exception occurred during JMS processing; nested exception is javax.jms.JMSException: Could not connect to broker URL: tcp://localhost:61616. Reason: java.net.ConnectException: Connection refused (Connection refused)
+33988 INFO  core.MessageDispatcher: sending text: 
+<broker-authentication username="TUC_TAC" password="secret" brokerTime="1617561865769"/>
+33990 INFO  core.PowerTacBroker: log attempt failed org.springframework.jms.UncategorizedJmsException: Uncategorized exception occurred during JMS processing; nested exception is javax.jms.JMSException: Could not connect to broker URL: tcp://localhost:61616. Reason: java.net.ConnectException: Connection refused (Connection refused)
+49991 INFO  core.MessageDispatcher: sending text: 
+<broker-authentication username="TUC_TAC" password="secret" brokerTime="1617561881772"/>
+49993 INFO  core.PowerTacBroker: log attempt failed org.springframework.jms.UncategorizedJmsException: Uncategorized exception occurred during JMS processing; nested exception is javax.jms.JMSException: Could not connect to broker URL: tcp://localhost:61616. Reason: java.net.ConnectException: Connection refused (Connection refused)
+65994 INFO  core.MessageDispatcher: sending text: 
+<broker-authentication username="TUC_TAC" password="secret" brokerTime="1617561897776"/>
+65996 INFO  core.PowerTacBroker: log attempt failed org.springframework.jms.UncategorizedJmsException: Uncategorized exception occurred during JMS processing; nested exception is javax.jms.JMSException: Could not connect to broker URL: tcp://localhost:61616. Reason: java.net.ConnectException: Connection refused (Connection refused)
+81997 INFO  core.MessageDispatcher: sending text: 
+<broker-authentication username="TUC_TAC" password="secret" brokerTime="1617561913779"/>
+81999 INFO  core.PowerTacBroker: log attempt failed org.springframework.jms.UncategorizedJmsException: Uncategorized exception occurred during JMS processing; nested exception is javax.jms.JMSException: Could not connect to broker URL: tcp://localhost:61616. Reason: java.net.ConnectException: Connection refused (Connection refused)
+98000 INFO  core.MessageDispatcher: sending text: 
+<broker-authentication username="TUC_TAC" password="secret" brokerTime="1617561929781"/>
+98002 INFO  core.PowerTacBroker: log attempt failed org.springframework.jms.UncategorizedJmsException: Uncategorized exception occurred during JMS processing; nested exception is javax.jms.JMSException: Could not connect to broker URL: tcp://localhost:61616. Reason: java.net.ConnectException: Connection refused (Connection refused)
