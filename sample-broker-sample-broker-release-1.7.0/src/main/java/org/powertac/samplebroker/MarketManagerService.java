@@ -16,9 +16,14 @@
 package org.powertac.samplebroker;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
+import java.util.SortedSet;
+
 
 import org.apache.logging.log4j.Logger;
+import org.joda.time.Instant;
+import org.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.powertac.common.BalancingTransaction;
 import org.powertac.common.CapacityTransaction;
@@ -29,8 +34,10 @@ import org.powertac.common.MarketPosition;
 import org.powertac.common.MarketTransaction;
 import org.powertac.common.Order;
 import org.powertac.common.Orderbook;
+import org.powertac.common.OrderbookOrder;
 import org.powertac.common.Timeslot;
 import org.powertac.common.WeatherForecast;
+import org.powertac.common.WeatherForecastPrediction;
 import org.powertac.common.WeatherReport;
 import org.powertac.common.config.ConfigurableValue;
 import org.powertac.common.msg.BalanceReport;
@@ -162,6 +169,22 @@ implements MarketManager, Initializable, Activatable
    */
   public synchronized void handleMessage (ClearedTrade ct)
   {
+    //TODO
+    // We want to make sure that there only one clearing price and if there are more than one of these
+    // coming in at each time slot.
+    Timeslot timeslot = ct.getTimeslot();
+    double executionMWh = ct.getExecutionMWh();
+    double executionPrice = ct.getExecutionPrice();
+    Instant dateExecuted = ct.getDateExecuted();
+
+    var clearedTrade = new HashMap<String, Object>();
+    clearedTrade.put("timeslot", timeslot);
+    clearedTrade.put("executionMWh",executionMWh);
+    clearedTrade.put("executionPrice",executionPrice );
+    clearedTrade.put("dateExecuted",dateExecuted);
+    
+    JSONObject clearedTradeJson =  new JSONObject(clearedTrade);
+    System.out.println(clearedTradeJson.toString());
   }
 
   /**
@@ -242,21 +265,45 @@ implements MarketManager, Initializable, Activatable
    * for the following timeslot.
    */
   public synchronized void handleMessage (Orderbook orderbook)
-  {
+  { // TODO
+    double clearingPrice = orderbook.getClearingPrice();
+    SortedSet<OrderbookOrder> asks = orderbook.getAsks();
+    SortedSet<OrderbookOrder> bids = orderbook.getBids();
+    JSONObject orderbookJson = new JSONObject();
+    orderbookJson.put("clearingPrice", clearingPrice);
+    orderbookJson.put("asks", asks);
+    orderbookJson.put("bids", bids);
+    System.out.println(orderbookJson.toString());
   }
   
   /**
    * Receives a new WeatherForecast.
    */
   public synchronized void handleMessage (WeatherForecast forecast)
-  {
+  {  // TODO
+    // List<WeatherForecastPrediction> prediction = forecast.getPredictions();
+    var weatherForecastJson = new JSONObject();
+    weatherForecastJson.put("prediction", forecast.getPredictions());
+    System.out.println(weatherForecastJson.toString());
   }
 
   /**
    * Receives a new WeatherReport.
    */
   public synchronized void handleMessage (WeatherReport report)
-  {
+  { // TODO
+    //double temperature = report.getTemperature();
+    //double windDirection = report.getWindDirection();
+    //double windSpeed = report.getWindSpeed();
+    //double cloudCover = report.getCloudCover();
+    
+    var weatherJson = new JSONObject();
+    weatherJson.put("Temperature", report.getTemperature());
+    weatherJson.put("Wind Direction", report.getWindDirection());
+    weatherJson.put("Wind Speed",report.getWindSpeed());
+    weatherJson.put("Cloud Cover", report.getCloudCover());
+
+    System.out.println(weatherJson.toString());
   }
 
   /**
