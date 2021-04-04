@@ -3,9 +3,17 @@ import threading
 from time import sleep
 
 PATH_SERVER = "server"
+# AGENTS = "default-broker,TUC_TAC,DiCaprio"
+# # Key: Agent's name. Value: [Agent's path, Binaries]
+# AGENT_INFO = {"TUC_TAC": ["brokers/TUC_TAC", "TUC_TAC_2020.jar"],
+#               "DiCaprio": ["brokers/DiCaprio", "DiCaprio-1.7.0.jar"],
+#               }
+
 AGENTS = "default-broker,TUC_TAC"
 # Key: Agent's name. Value: [Agent's path, Binaries]
-AGENT_INFO = {"TUC_TAC": ["brokers/TUC_TAC", "TUC_TAC_2020.jar"]}
+AGENT_INFO = {"TUC_TAC": ["brokers/TUC_TAC", "TUC_TAC_2020.jar"]
+              }
+
 SERVER_BOOT_TIME = 10
 
 
@@ -31,3 +39,5 @@ def run_game_and_agents(game_name):
 
     for agent_thread in agent_threads:
         agent_thread.start()
+
+run_game_and_agents("game1")
