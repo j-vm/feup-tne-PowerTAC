@@ -1,0 +1,45 @@
+3372 DEBUG util.ReflectionTestUtils: Setting field 'router' of type [null] on target object [org.powertac.samplebroker.core.PowerTacBroker@7068f7ca] or target class [class org.powertac.samplebroker.core.PowerTacBroker] to value [org.powertac.samplebroker.core.MessageDispatcher@38548b19]
+3389 DEBUG util.ReflectionTestUtils: Setting field 'customerRepo' of type [null] on target object [org.powertac.samplebroker.core.PowerTacBroker@7068f7ca] or target class [class org.powertac.samplebroker.core.PowerTacBroker] to value [org.powertac.common.repo.CustomerRepo@6ceb7b5e]
+3401 DEBUG util.ReflectionTestUtils: Setting field 'timeService' of type [null] on target object [org.powertac.samplebroker.core.PowerTacBroker@7068f7ca] or target class [class org.powertac.samplebroker.core.PowerTacBroker] to value [org.powertac.common.TimeService@989da1]
+3402 DEBUG util.ReflectionTestUtils: Setting field 'brokerRepo' of type [null] on target object [org.powertac.samplebroker.core.PowerTacBroker@7068f7ca] or target class [class org.powertac.samplebroker.core.PowerTacBroker] to value [org.powertac.common.repo.BrokerRepo@3eed0f5]
+3413 DEBUG util.ReflectionTestUtils: Setting field 'brokerMessageReceiver' of type [null] on target object [org.powertac.samplebroker.core.PowerTacBroker@7068f7ca] or target class [class org.powertac.samplebroker.core.PowerTacBroker] to value [Mock for BrokerMessageReceiver, hashCode: 368727462]
+3415 DEBUG util.ReflectionTestUtils: Setting field 'username' of type [null] on target object [org.powertac.samplebroker.core.PowerTacBroker@7068f7ca] or target class [class org.powertac.samplebroker.core.PowerTacBroker] to value [Sample]
+3422 DEBUG repo.BrokerRepo: add Sample
+3440 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(SimStart)
+3441 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(SimPause)
+3441 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(SimResume)
+3441 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(SimEnd)
+3441 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(TimeslotUpdate)
+3441 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(TimeslotComplete)
+3441 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(Competition)
+3441 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(BrokerAccept)
+3459 DEBUG core.MessageDispatcher: Route org.powertac.common.msg.BrokerAccept
+3460 DEBUG core.PowerTacBroker: found method public synchronized void org.powertac.samplebroker.core.PowerTacBroker.handleMessage(org.powertac.common.msg.BrokerAccept)
+3506 DEBUG util.ReflectionTestUtils: Setting field 'router' of type [null] on target object [org.powertac.samplebroker.core.PowerTacBroker@213860b8] or target class [class org.powertac.samplebroker.core.PowerTacBroker] to value [org.powertac.samplebroker.core.MessageDispatcher@4ba89729]
+3507 DEBUG util.ReflectionTestUtils: Setting field 'customerRepo' of type [null] on target object [org.powertac.samplebroker.core.PowerTacBroker@213860b8] or target class [class org.powertac.samplebroker.core.PowerTacBroker] to value [org.powertac.common.repo.CustomerRepo@178270b2]
+3508 DEBUG util.ReflectionTestUtils: Setting field 'timeService' of type [null] on target object [org.powertac.samplebroker.core.PowerTacBroker@213860b8] or target class [class org.powertac.samplebroker.core.PowerTacBroker] to value [org.powertac.common.TimeService@795fd838]
+3509 DEBUG util.ReflectionTestUtils: Setting field 'brokerRepo' of type [null] on target object [org.powertac.samplebroker.core.PowerTacBroker@213860b8] or target class [class org.powertac.samplebroker.core.PowerTacBroker] to value [org.powertac.common.repo.BrokerRepo@1b005a0b]
+3510 DEBUG util.ReflectionTestUtils: Setting field 'brokerMessageReceiver' of type [null] on target object [org.powertac.samplebroker.core.PowerTacBroker@213860b8] or target class [class org.powertac.samplebroker.core.PowerTacBroker] to value [Mock for BrokerMessageReceiver, hashCode: 337545117]
+3510 DEBUG util.ReflectionTestUtils: Setting field 'username' of type [null] on target object [org.powertac.samplebroker.core.PowerTacBroker@213860b8] or target class [class org.powertac.samplebroker.core.PowerTacBroker] to value [Sample]
+3510 DEBUG repo.BrokerRepo: add Sample
+3511 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(SimStart)
+3511 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(SimPause)
+3511 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(SimResume)
+3514 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(SimEnd)
+3514 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(TimeslotUpdate)
+3515 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(TimeslotComplete)
+3533 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(Competition)
+3533 INFO  core.PowerTacBroker: Register PowerTacBroker.handleMessage(BrokerAccept)
+3548 DEBUG core.MessageDispatcher: Route org.powertac.common.msg.BrokerAccept
+3548 DEBUG core.PowerTacBroker: found method public synchronized void org.powertac.samplebroker.core.PowerTacBroker.handleMessage(org.powertac.common.msg.BrokerAccept)
+3549 DEBUG core.MessageDispatcher: Route org.powertac.common.Competition
+3549 DEBUG core.PowerTacBroker: found method public void org.powertac.samplebroker.core.PowerTacBroker.handleMessage(org.powertac.common.Competition)
+3608 INFO  core.PowerTacBroker: Sim start time: 2011-02-15T23:00:00.000Z
+3608 DEBUG core.PowerTacBroker: found 0 repos
+3609 INFO  core.PowerTacBroker: adding competitor Sam
+3609 DEBUG repo.BrokerRepo: add Sam
+3609 INFO  core.PowerTacBroker: adding competitor Sally
+3609 DEBUG repo.BrokerRepo: add Sally
+3938 DEBUG util.ReflectionTestUtils: Setting field 'timeslotRepo' of type [null] on target object [org.powertac.samplebroker.PortfolioManagerService@4b7c4456] or target class [class org.powertac.samplebroker.PortfolioManagerService] to value [Mock for TimeslotRepo, hashCode: 203409962]
+3938 DEBUG util.ReflectionTestUtils: Setting field 'customerRepo' of type [null] on target object [org.powertac.samplebroker.PortfolioManagerService@4b7c4456] or target class [class org.powertac.samplebroker.PortfolioManagerService] to value [org.powertac.common.repo.CustomerRepo@5533dc72]
+3939 DEBUG util.ReflectionTestUtils: Setting field 'propertiesService' of type [null] on target object [org.powertac.samplebroker.PortfolioManagerService@4b7c4456] or target class [class org.powertac.samplebroker.PortfolioManagerService] to value [Mock for BrokerPropertiesService, hashCode: 1694239102]
