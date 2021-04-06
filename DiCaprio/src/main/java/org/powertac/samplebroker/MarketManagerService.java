@@ -16,7 +16,6 @@
 package org.powertac.samplebroker;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 import java.util.SortedSet;
 
@@ -266,10 +265,12 @@ implements MarketManager, Initializable, Activatable
    */
   public synchronized void handleMessage (Orderbook orderbook)
   { // TODO
+    var timeSlot = orderbook.getTimeslotIndex();
     double clearingPrice = orderbook.getClearingPrice();
     SortedSet<OrderbookOrder> asks = orderbook.getAsks();
     SortedSet<OrderbookOrder> bids = orderbook.getBids();
     JSONObject orderbookJson = new JSONObject();
+    orderbookJson.put("timeSlot", timeSlot);
     orderbookJson.put("clearingPrice", clearingPrice);
     orderbookJson.put("asks", asks);
     orderbookJson.put("bids", bids);
@@ -282,7 +283,9 @@ implements MarketManager, Initializable, Activatable
   public synchronized void handleMessage (WeatherForecast forecast)
   {  // TODO
     // List<WeatherForecastPrediction> prediction = forecast.getPredictions();
+    var timeSlot = forecast.getTimeslotIndex();
     var weatherForecastJson = new JSONObject();
+    weatherForecastJson.put("timeSlot", timeSlot);
     weatherForecastJson.put("prediction", forecast.getPredictions());
     System.out.println(weatherForecastJson.toString());
   }
