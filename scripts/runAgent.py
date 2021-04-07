@@ -1,6 +1,8 @@
 from shutil import copyfile
 from os import system
 
+from runGame import run_agent
+
 AGENT_NAME = "DiCaprio"
 VERSION = "1.7.0"
 
@@ -11,3 +13,4 @@ to_path = f"brokers/{AGENT_NAME}/{AGENT_NAME}-{VERSION}.jar"
 
 copyfile(from_path, to_path)
 
+run_agent(AGENT_NAME)
