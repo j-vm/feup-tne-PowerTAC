@@ -35,7 +35,9 @@ def run_game_and_agents(game_name):
     for thread in threads:
         thread.start()
 
-game_name = "bootstrap"
-# run_bootstrap(game_name)
+# game_name = "bootstrap"
+# # run_bootstrap(game_name)
 
-run_game_and_agents(game_name)
+# run_game_and_agents(game_name)
+
+# run_agent("DiCaprio")

@@ -15,13 +15,12 @@
  */
 package org.powertac.samplebroker;
 
+import org.powertac.samplebroker.PyComs;
+
 import java.util.HashMap;
 import java.util.Random;
-import java.util.SortedSet;
-
 
 import org.apache.logging.log4j.Logger;
-import org.joda.time.Instant;
 import org.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.powertac.common.BalancingTransaction;
@@ -33,10 +32,8 @@ import org.powertac.common.MarketPosition;
 import org.powertac.common.MarketTransaction;
 import org.powertac.common.Order;
 import org.powertac.common.Orderbook;
-import org.powertac.common.OrderbookOrder;
 import org.powertac.common.Timeslot;
 import org.powertac.common.WeatherForecast;
-import org.powertac.common.WeatherForecastPrediction;
 import org.powertac.common.WeatherReport;
 import org.powertac.common.config.ConfigurableValue;
 import org.powertac.common.msg.BalanceReport;
@@ -73,6 +70,8 @@ implements MarketManager, Initializable, Activatable
   @Autowired
   private PortfolioManager portfolioManager;
 
+  private PyComs pyComs;
+
   // ------------ Configurable parameters --------------
   // max and min offer prices. Max means "sure to trade"
   @ConfigurableValue(valueType = "Double",
@@ -108,9 +107,11 @@ implements MarketManager, Initializable, Activatable
   private double[] marketPrice;
   private double meanMarketPrice = 0.0;
 
-  public MarketManagerService ()
+  @Autowired
+  public MarketManagerService (PyComs pyComs)
   {
     super();
+    this.pyComs = pyComs;
   }
 
   /* (non-Javadoc)
@@ -168,22 +169,14 @@ implements MarketManager, Initializable, Activatable
    */
   public synchronized void handleMessage (ClearedTrade ct)
   {
-    //TODO
-    // We want to make sure that there only one clearing price and if there are more than one of these
-    // coming in at each time slot.
-    Timeslot timeslot = ct.getTimeslot();
-    double executionMWh = ct.getExecutionMWh();
-    double executionPrice = ct.getExecutionPrice();
-    Instant dateExecuted = ct.getDateExecuted();
-
     var clearedTrade = new HashMap<String, Object>();
-    clearedTrade.put("timeslot", timeslot);
-    clearedTrade.put("executionMWh",executionMWh);
-    clearedTrade.put("executionPrice",executionPrice );
-    clearedTrade.put("dateExecuted",dateExecuted);
+    clearedTrade.put("timeslotIndex", ct.getTimeslotIndex());
+    clearedTrade.put("executionMWh", ct.getExecutionMWh());
+    clearedTrade.put("executionPrice", ct.getExecutionPrice());
+    clearedTrade.put("dateExecuted", ct.getDateExecuted());
     
     JSONObject clearedTradeJson =  new JSONObject(clearedTrade);
-    System.out.println(clearedTradeJson.toString());
+    pyComs.trigger(clearedTradeJson, JSONType.clearedTradeJsonType);
   }
 
   /**
@@ -264,49 +257,47 @@ implements MarketManager, Initializable, Activatable
    * for the following timeslot.
    */
   public synchronized void handleMessage (Orderbook orderbook)
-  { // TODO
-    var timeSlot = orderbook.getTimeslotIndex();
-    double clearingPrice = orderbook.getClearingPrice();
-    SortedSet<OrderbookOrder> asks = orderbook.getAsks();
-    SortedSet<OrderbookOrder> bids = orderbook.getBids();
+  {
+    System.out.println("orderbook");
     JSONObject orderbookJson = new JSONObject();
-    orderbookJson.put("timeSlot", timeSlot);
-    orderbookJson.put("clearingPrice", clearingPrice);
-    orderbookJson.put("asks", asks);
-    orderbookJson.put("bids", bids);
-    System.out.println(orderbookJson.toString());
+    orderbookJson.put("timeslotIndex", orderbook.getTimeslotIndex());
+    orderbookJson.put("clearingPrice", orderbook.getClearingPrice());
+    orderbookJson.put("asks", orderbook.getAsks());
+    orderbookJson.put("bids", orderbook.getBids());
+    System.out.println("orderbook1");
+
+    System.out.println(PyComs.orderbookJson.size());
+    pyComs.trigger(orderbookJson, JSONType.orderbookJsonType);
+    System.out.println(PyComs.orderbookJson.size());
   }
   
   /**
    * Receives a new WeatherForecast.
    */
   public synchronized void handleMessage (WeatherForecast forecast)
-  {  // TODO
-    // List<WeatherForecastPrediction> prediction = forecast.getPredictions();
-    var timeSlot = forecast.getTimeslotIndex();
+  {
+    System.out.println("WeatherForecast");
     var weatherForecastJson = new JSONObject();
-    weatherForecastJson.put("timeSlot", timeSlot);
+    weatherForecastJson.put("timelotIndex", forecast.getTimeslotIndex());
     weatherForecastJson.put("prediction", forecast.getPredictions());
-    System.out.println(weatherForecastJson.toString());
+    System.out.println("WeatherForecast1");
+
+    pyComs.trigger(weatherForecastJson, JSONType.weatherForecastJsonType);
   }
 
   /**
    * Receives a new WeatherReport.
    */
   public synchronized void handleMessage (WeatherReport report)
-  { // TODO
-    //double temperature = report.getTemperature();
-    //double windDirection = report.getWindDirection();
-    //double windSpeed = report.getWindSpeed();
-    //double cloudCover = report.getCloudCover();
-    
+  {
     var weatherJson = new JSONObject();
-    weatherJson.put("Temperature", report.getTemperature());
-    weatherJson.put("Wind Direction", report.getWindDirection());
-    weatherJson.put("Wind Speed",report.getWindSpeed());
-    weatherJson.put("Cloud Cover", report.getCloudCover());
+    weatherJson.put("temperature", report.getTemperature());
+    weatherJson.put("windDirection", report.getWindDirection());
+    weatherJson.put("windSpeed",report.getWindSpeed());
+    weatherJson.put("cloudCover", report.getCloudCover());
+    weatherJson.put("timeslotIndex", report.getTimeslotIndex());
 
-    System.out.println(weatherJson.toString());
+    pyComs.trigger(weatherJson, JSONType.weatherJsonType);
   }
 
   /**

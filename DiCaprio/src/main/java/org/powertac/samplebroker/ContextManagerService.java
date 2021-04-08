@@ -17,6 +17,8 @@ package org.powertac.samplebroker;
 
 import org.apache.logging.log4j.Logger;
 
+import static org.powertac.samplebroker.JSONType.energyReportType;
+
 import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -43,6 +45,8 @@ import org.json.JSONObject;
 public class ContextManagerService implements Initializable {
   static private Logger log = LogManager.getLogger(ContextManagerService.class);
 
+  private PyComs pyComs;
+
   @Autowired
   private BrokerPropertiesService propertiesService;
 
@@ -50,6 +54,11 @@ public class ContextManagerService implements Initializable {
 
   // current cash balance
   private double cash = 0;
+
+  @Autowired
+  public void initPyComs(PyComs pyComs){
+    this.pyComs = pyComs;
+  }
 
   // @SuppressWarnings("unchecked")
   @Override
@@ -94,13 +103,16 @@ public class ContextManagerService implements Initializable {
    * summed across all brokers.
    */
   public void handleMessage(DistributionReport dr) {
+    System.out.println("DistributionReport");
     HashMap<String,Object> hM = new HashMap<String, Object>();
     hM.put("Total Consumption", dr.getTotalConsumption());
     hM.put("Total Production", dr.getTotalProduction());
 
     var energyReport = new JSONObject(hM);
-    System.out.println(energyReport.toString());
-    // TODO
+    
+    System.out.println("DistributionReport1");
+    
+    pyComs.trigger(energyReport, energyReportType);
   }
 
   /**
@@ -109,26 +121,21 @@ public class ContextManagerService implements Initializable {
    * and usage profiles.
    */
   public void handleMessage(Competition comp) {
-    //
-    // TODO - process competition properties
-    // TODO confirm that serialization works.
+    System.out.println("Competition");
     int noCompetitors = comp.getBrokers().size();
-    int noCostumer = comp.getCustomers().size();
+    int noCustomer = comp.getCustomers().size();
 
     MarketBootstrapData marketBootstrapData = comp.getMarketBootstrapData();
-    
-    double[] arrMWPH = marketBootstrapData.getMwh();
-    double[] arrMarketPrice = marketBootstrapData.getMarketPrice();
-    
+
     var hM = new HashMap<String, Object>();
     hM.put("marketBootstrapData", marketBootstrapData);
-    hM.put("arrMWPH",arrMWPH);
-    hM.put("arrMarketPrice",arrMarketPrice);
     hM.put("no Competitors",noCompetitors);
-    hM.put("noCostumer ", noCostumer);
+    hM.put("noCustomer ", noCustomer);
+    
     
     var competitionJson =  new JSONObject(hM);
-    System.out.println(competitionJson.toString());
+    System.out.println("Competition1");
+    pyComs.trigger(competitionJson, JSONType.competitionJsonType);
   }
 
   /**
