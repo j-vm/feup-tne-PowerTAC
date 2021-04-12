@@ -178,7 +178,7 @@ implements MarketManager, Initializable, Activatable
     clearedTrade.put("dateExecuted", ct.getDateExecuted());
     
     JSONObject clearedTradeJson =  new JSONObject(clearedTrade);
-    // pyComs.trigger(clearedTradeJson, PyComs.jsonType.get("clearedTradeJsonType"));
+    pyComs.trigger(clearedTradeJson, PyComs.jsonType.get("clearedTradeJsonType"));
   }
 
   /**
@@ -268,9 +268,7 @@ implements MarketManager, Initializable, Activatable
     orderbookJson.put("bids", orderbook.getBids());
     System.out.println("orderbook1");
 
-    System.out.println(PyComs.orderbookJson.size());
-    // pyComs.trigger(orderbookJson, PyComs.jsonType.get("orderbookJsonType")); 
-    System.out.println(PyComs.orderbookJson.size());
+    pyComs.trigger(orderbookJson, PyComs.jsonType.get("orderbookJsonType")); 
   }
   
   /**
@@ -284,7 +282,7 @@ implements MarketManager, Initializable, Activatable
     weatherForecastJson.put("prediction", forecast.getPredictions());
     System.out.println("WeatherForecast1");
 
-    // pyComs.trigger(weatherForecastJson, PyComs.jsonType.get("weatherForecastJson")); 
+    pyComs.trigger(weatherForecastJson, PyComs.jsonType.get("weatherForecastJson")); 
   }
 
   /**
@@ -299,7 +297,7 @@ implements MarketManager, Initializable, Activatable
     weatherJson.put("cloudCover", report.getCloudCover());
     weatherJson.put("timeslotIndex", report.getTimeslotIndex());
 
-    // pyComs.trigger(weatherJson, PyComs.jsonType.get("weatherJsonType")); 
+    pyComs.trigger(weatherJson, PyComs.jsonType.get("weatherJsonType")); 
   }
 
   /**

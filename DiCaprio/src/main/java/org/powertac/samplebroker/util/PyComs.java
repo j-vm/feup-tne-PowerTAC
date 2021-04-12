@@ -29,10 +29,8 @@ public class PyComs {
     ); 
 
     public void trigger(JSONObject obj, String type){
-        System.out.println("\n\nGot to trigger\n\n");
-        // var currSlot = obj.getString("timeslotIndex");
-        var currSlot = "0";
-        System.out.println(obj.toString());
+        String currSlot = (String) obj.get("timeslotIndex"); 
+        System.out.println(currSlot);
         switch(type){
             case "energyReportType":
                 energyReportMap.put(Integer.parseInt(currSlot), obj);

@@ -104,16 +104,18 @@ public class ContextManagerService implements Initializable {
   public void handleMessage(DistributionReport dr) {
     System.out.println("DistributionReport");
     HashMap<String,Object> hM = new HashMap<String, Object>();
-    hM.put("Total Consumption", dr.getTotalConsumption());
-    hM.put("Total Production", dr.getTotalProduction());
+    // int timeSlotIndex = dr.getTimeslotIndex();
+
+    hM.put("TotalConsumption", dr.getTotalConsumption());
+    hM.put("TotalProduction", dr.getTotalProduction());
+    // hM.put("timeslotIndex", timeSlotIndex);
 
     var energyReport = new JSONObject(hM);
     
     System.out.println("DistributionReport1");
     
 
-    // int timeSlotIndex = comp.getTimeslotIndex();
-    // pyComs.trigger(energyReport, PyComs.jsonType.get("energyReportType")); 
+    pyComs.trigger(energyReport, PyComs.jsonType.get("energyReportType")); 
   }
 
   /**
