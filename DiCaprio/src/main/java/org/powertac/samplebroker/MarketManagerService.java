@@ -15,7 +15,7 @@
  */
 package org.powertac.samplebroker;
 
-import org.powertac.samplebroker.PyComs;
+import org.powertac.samplebroker.util.PyComs;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -47,6 +47,8 @@ import org.powertac.samplebroker.interfaces.MarketManager;
 import org.powertac.samplebroker.interfaces.PortfolioManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;                                  
 
 /**
  * Handles market interactions on behalf of the broker.
@@ -176,7 +178,7 @@ implements MarketManager, Initializable, Activatable
     clearedTrade.put("dateExecuted", ct.getDateExecuted());
     
     JSONObject clearedTradeJson =  new JSONObject(clearedTrade);
-    pyComs.trigger(clearedTradeJson, JSONType.clearedTradeJsonType);
+    // pyComs.trigger(clearedTradeJson, PyComs.jsonType.get("clearedTradeJsonType"));
   }
 
   /**
@@ -267,7 +269,7 @@ implements MarketManager, Initializable, Activatable
     System.out.println("orderbook1");
 
     System.out.println(PyComs.orderbookJson.size());
-    pyComs.trigger(orderbookJson, JSONType.orderbookJsonType);
+    // pyComs.trigger(orderbookJson, PyComs.jsonType.get("orderbookJsonType")); 
     System.out.println(PyComs.orderbookJson.size());
   }
   
@@ -282,7 +284,7 @@ implements MarketManager, Initializable, Activatable
     weatherForecastJson.put("prediction", forecast.getPredictions());
     System.out.println("WeatherForecast1");
 
-    pyComs.trigger(weatherForecastJson, JSONType.weatherForecastJsonType);
+    // pyComs.trigger(weatherForecastJson, PyComs.jsonType.get("weatherForecastJson")); 
   }
 
   /**
@@ -297,7 +299,7 @@ implements MarketManager, Initializable, Activatable
     weatherJson.put("cloudCover", report.getCloudCover());
     weatherJson.put("timeslotIndex", report.getTimeslotIndex());
 
-    pyComs.trigger(weatherJson, JSONType.weatherJsonType);
+    // pyComs.trigger(weatherJson, PyComs.jsonType.get("weatherJsonType")); 
   }
 
   /**

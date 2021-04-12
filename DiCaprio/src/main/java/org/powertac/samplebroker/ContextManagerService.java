@@ -16,11 +16,7 @@
 package org.powertac.samplebroker;
 
 import org.apache.logging.log4j.Logger;
-
-import static org.powertac.samplebroker.JSONType.energyReportType;
-
 import java.util.HashMap;
-
 import org.apache.logging.log4j.LogManager;
 import org.powertac.common.BankTransaction;
 import org.powertac.common.CashPosition;
@@ -34,6 +30,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.json.JSONObject;
+import org.powertac.samplebroker.util.PyComs;
+
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 
 /**
@@ -112,7 +111,9 @@ public class ContextManagerService implements Initializable {
     
     System.out.println("DistributionReport1");
     
-    pyComs.trigger(energyReport, energyReportType);
+
+    // int timeSlotIndex = comp.getTimeslotIndex();
+    // pyComs.trigger(energyReport, PyComs.jsonType.get("energyReportType")); 
   }
 
   /**
@@ -121,21 +122,38 @@ public class ContextManagerService implements Initializable {
    * and usage profiles.
    */
   public void handleMessage(Competition comp) {
-    System.out.println("Competition");
-    int noCompetitors = comp.getBrokers().size();
-    int noCustomer = comp.getCustomers().size();
 
-    MarketBootstrapData marketBootstrapData = comp.getMarketBootstrapData();
+    try {
+      System.out.println("Competition");
+      AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+      context.scan("org.powertac.samplebroker.util");
+      context.refresh();
+      
+      
+      int noCompetitors = comp.getBrokers().size();
+      int noCustomer = comp.getCustomers().size();
 
-    var hM = new HashMap<String, Object>();
-    hM.put("marketBootstrapData", marketBootstrapData);
-    hM.put("no Competitors",noCompetitors);
-    hM.put("noCustomer ", noCustomer);
+      MarketBootstrapData marketBootstrapData = comp.getMarketBootstrapData();
+
+      var hM = new HashMap<String, Object>();
+      hM.put("marketBootstrapData", marketBootstrapData);
+      hM.put("noCompetitors",noCompetitors);
+      hM.put("noCustomer ", noCustomer);
+      hM.put("timeslotIndex ", "-10");
+      
+      var competitionJson =  new JSONObject(hM);
+      System.out.println("Competition1");
+
+      PyComs pyComs = context.getBean(PyComs.class);
+
+      pyComs.trigger(competitionJson, PyComs.jsonType.get("competitionJsonType")); 
+
+      context.close();
+    }
+    catch(Exception E){
+      System.err.println(E);
+    }
     
-    
-    var competitionJson =  new JSONObject(hM);
-    System.out.println("Competition1");
-    pyComs.trigger(competitionJson, JSONType.competitionJsonType);
   }
 
   /**

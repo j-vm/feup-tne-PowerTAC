@@ -54,6 +54,7 @@ import org.powertac.samplebroker.interfaces.MarketManager;
 import org.powertac.samplebroker.interfaces.PortfolioManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.powertac.samplebroker.util.PyComs;
 
 /**
  * Handles portfolio-management responsibilities for the broker. This
