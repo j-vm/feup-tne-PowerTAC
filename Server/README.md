@@ -1,57 +1,110 @@
-Power TAC Sample Broker
-=======================
+server-distribution
+===================
 
-The sample broker is intended to help broker developers by providing both a foundation that interfaces correctly with the Power TAC infrastructure, and an example of a working broker agent. It handles all message types and operates in both wholesale and retail markets. It issues a set of tariffs as soon as possible, one for each PowerType detected in the customer records given in the bootstrap dataset. It then trades in the wholesale market using essentially the same strategy as the default broker. 
+Distribution package for the Power TAC simulation server
 
-Without changing anything, the current version assumes the server is running on localhost, and is not picky about passwords. You can change the server URL by editing the broker.properties file, or by using your own properties file. Passwords are generally ignored outside a tournament environment.
+Welcome to the current 1.8.0-SNAPSHOT version of the Power TAC simulation server. This is a reasonably stable development snapshot containing the server and a version of the game visualizer that works in "development" mode, including a simple control panel that allows you to set up and run bootstrap and competition sessions. There is a compatible sample broker distributed separately. This release is intended to support broker development and simple experiments.
 
-Import into IDE
----------------
+This version requires an installation of Java 11 jdk. A jre installation will not work. Release notes are available at http://www.powertac.org/wiki/index.php/Getting_Started.
 
-Most developers will presumably want to work with the code using an IDE such as [STS](http://www.springsource.org/sts). The sample-broker package is a maven project, so it works to just do File->Import->Existing Maven Projects and select the sample-broker directory (the directory containing the pom.xml file). You may wish to change the "name" attribute in the pom.xml to match the name of your broker. You can set up a simple "run configuration" to allow you to run it from the IDE. It is an AspectJ/Java app, the main class is `org.powertac.samplebroker.core.BrokerMain`, and there are no arguments required unless you wish to specify an alternate config file or pass other options (see below).
+Javadocs are available at https://powertac.github.io/server/master/apidocs/.
 
-Run from command line
----------------------
+Running the server
+------------------
 
-This is a maven project. You can run the broker from the command line using maven, as
+The server is distributed as a maven pom.xml file, and you must have Apache Maven 3.5.0 or later installed to use it. The first time you run it, maven will download all the server components, as well as other libraries, from Maven Central (or from the Sonatype snapshot repository if you are running a snapshot version). This can take some time the first time you start the server.
 
-`mvn test exec:exec [-Dexec.args="<arguments>"]`
+Before you run the server, note that it runs in two different modes:
+* in bootstrap mode, only the "default" broker is active, and all customers are subscribed to its simple production and consumption tariffs. The bootstrap period is typically 360 timeslots (15 days), and data from the last 14 days is collected and used to "seed" a normal simulation run.
+* in sim mode, competing brokers are allowed to log in. Before the sim starts, the bootstrap dataset is broadcast to all brokers to permit them to seed their models, such as customer usage profiles and wholesale market price models. The simulation then starts at a point in simulated time immediately following the end of the bootstrap period. Many sims can be run with the same bootstrap dataset.
 
-where arguments can include:
+The server can be run from the command line (the "cli" option), and from the web interface (the "web" option). Both options accept the same input settings, except that the web option does not support the Tournament Manager.
 
-* `--config config-file.properties` specifies an optional properties file that can set username, password, server URL, and other broker properties. If not given, the file broker.properties in the current working directory will be used. 
-* `--jms-url tcp://host.name:61616` overrides the JMS URL for the sim server. In a tournament setting this value is supplied by the tournament infrastructure, but this option can be handy for local testing.
-* `--repeat-count n` instructs the broker to run n sessions, completely reloading its context and restarting after each session completes. Default value is 1.
-* `--repeat-hours h` instructs the broker to attempt to run sessions repeatedly for h hours. This is especially useful in a tournament situation, where the number of games may not be known, but the duration of the tournament can be approximated. If repeat-count is given, this argument will be ignored.
-* `--no-ntp` if given, tells the broker to not rely on system clock synchronization, but rather to estimate the clock offset between server and broker. Note that this will be an approximation, but should at least get the broker into the correct timeslot.
-* `--queue-name name` tells the broker to listen on the named queue for messages from the server. This is really only useful for testing, since the queue name defaults to the broker name, and in a tournament situation is provided by the tournament manager upon successful login.
-* `--server-queue name` tells the broker the name of the JMS input queue for the server. This is also needed only for testing, because the queue name defaults to 'serverInput' and in a tournament situation is provided by the tournament manager upon successful login.
+Configuration is by command-line options or the equivalent data in a web form, and by a configuration file. Note that a number of these options refer to the Tournament Manager, which is not yet released. See https://github.com/powertac/powertac-server/wiki/Tournament-Scheduler for background on this.
 
-If there are no non-default arguments, and if the broker has already been compiled, then it is enough to simply run the broker as `mvn exec:exec`.
+The command line options depend on the type of session you want to run. To run a bootstrap session, the command is
 
-Note: because of how the exec Maven plugin works, and because the main class is actually in a different module (`broker-core`), it is possible to execute
-without compiling. This will result in running stale class files (previously compiled classes possibly from outdated source code) or, if you've not compiled
-at all yet or recently cleaned the project, a broker that connects to the server but doesn't issue any transactions. So always make sure to tell Maven to do
-both `compile` as well as `exec:exec`!
+```
+  mvn -Pcli -Dexec.args="--boot bootstrap-data [options]"
+```
+where `bootstrap-data` is the name (not a URL) of the xml file that will be  written with the results of the bootstrap run, `options` include:
+* `--control controller-url` gives the URL of the Tournament Manager api, from which the server can request a configuration and a log-prefix string.
+* `--game-id` labels the game. This label will form part of the names of the logfiles, and will show up in the Visualizer.
+* `--config server-config` gives the URL (or a filename) of a properties file that overrides the standard server configuration. If this option is missing and the `--control` option is given, the server configuration is retrieved from `controller-url/server-config`.
+* `--log-suffix suffix` gives the root name for the log files, and defaults to "boot"; two log files are produced: `powertac-suffix.trace` and `powertac-suffix.state`. If this option is missing and `--control` is given, the logfile prefix will be retrieved from `controller-url/log-suffix`.
+* `--weather-data name` gives the name of a file (XML or state) or URL (state) containing weather data. The XML can be generated by create_sim_weather.py, which can be found in the script directory of powertac-weather-server. The state file is a state log from a previous game, this can also be an URL. Using this option also sets the BaseTime of the simulation.
+* `--config-dump filename` gathers and dumps the full server configuration to `filename`. The resulting file will contain all the high-level configuration parameters and their configured values, even if they were not set by any configuration file. It will not contain low-level details that require knowledge of the code to use correctly. Note that this option can be used without actually running a boot or sim session, by omitting the --boot and --sim options.
+   
+To run the server from the command line in sim mode, the command is
 
-Prepare an executable jar
----------------------------
+```
+  mvn -Pcli -Dexec.args="--sim --boot-data bootname [options]"
+```
+where options include the `--config`, `--game-id`, `--log-suffix`, and `--control` options as in bootstrap mode, as well as
+* `--boot-data bootstrap-data` gives the URL (or simply a filename) of the xml file from which a bootstrap record can be read. If this option is missing and the `--control` is a URL. If given, it provides a prefix for the URL of the bootstrap record, which will be `control-url/bootstrap-data`. Note that the server will not start if one of these two sources does not produce a valid bootstrap dataset.
+* `--random-seeds name` gives the name of a file or URL containing random seed values. Typically this is the state log from a previous game, or just the lines from a state log containing the string "powertac.common.RandomSeed".
+* `--weather-data name` gives the name of a file (XML or state) or URL (state) containing weather data. The XML can be generated by create_sim_weather.py, which can be found in the script directory of powertac-weather-server. The state file is a state log from a previous game, this can also be an URL.
+* `--jms-url url` gives the URL of the jms message broker, which is typically, but not necessarily, instantiated inside the server. The default value is `tcp://localhost:61616` unless you change it in your server configuration file. If you want to connect to it from another host, you need to use a valid hostname rather than localhost, and the brokers must specify the same URL.
+* `--brokers broker,...` is a comma-separated list (no whitespace allowed) of broker usernames that are expected to log in to the simulation before it starts. If this option is missing and `--control` is provided, then the broker list will be retrieved from `controller-url/broker-list`. A broker name can be given as `username/queue-name`, in which case the broker's input queue will be called `queue-name`. If the `queue-name` is not given, then the broker's input queue name will be the same as its username.
+* `--input-queue name` gives the name of the jms input queue for the server. If not given, then the jms input queue is called `serverInput`.
+* `--log-suffix suffix` defaults to "sim" rather than "boot".
+  
+If you want to override some aspect of server configuration that is
+not directly supported by command-line options, you will need to edit
+the sample server configuration file given in
+`config/server.properties`, and then specify it as the argument to the `--config` option.
 
-Power TAC and other competitive simulations are research tools. A major advantage of the competitive simulation model is the ability to test ideas in a competitive environment. This requires competitors, which means we need to share our broker implementations with each other. Since most teams will be understandably reluctant to share source code, we need a method to share binaries. This package comes with an ability to create an "executable jar" file from source that includes all dependencies, and typically needs only a configuration file to work. You can create an executable jar as
+To run the server under control of the new visualizer2, the command is
 
-`mvn clean package`
+```
+  mvn -Pweb2 [-Dexec.args='options']
+```
 
-which will produce a file `target/${artifactId}-${version}.jar`, corresponding to the `artifactId` and `version` tags near the top of the pom.xml. All classpath resources will be included (files in `src/main/resources`) in addition to the compiled classes and all dependencies. To share your broker, you need to bundle the executable jar with any configuration files needed by your implementation that are not on the classpath (such as broker.properties), and of course a README file that tells others how to use it.
+Where options can include
+* `--application.timeslotPause=nnn` slows down the pace of replay when using the visualizer to view an existing game through its state log, to allow you to inspect and interact with it while it's running. The `nnn` value is the time in msec to pause between timeslots. Values less than about 800 may not give consistent results when viewing games with larger numbers of brokers.
 
-You can then run your broker agent as
+Shortly after you see the JHIPSTER logo in the console, you can point a browser
+at localhost:8080 (assuming you haven't changed the port configuration) to get
+to the UI.
 
-`java -jar name.jar [args]`
+Please take note of file locations when using the -Pweb2 profile.
 
-Generate javadocs
------------------
+Out of the box, two accounts are created: `admin` and `user`. The passwords are 
+initially `admin` and `user`, respectively. You may want to change that when
+you're up and running.
 
-You can use maven to generate javadocs for this package as
+In the new visualizer, games are owned by the user who logged in to create/start
+them. To account for this, the log files are now written to user-specific
+directories, e.g. "files/admin/log".
 
-`mvn javadoc:javadoc`
+Refer to the README.md of the visualizer2 for more information.
 
-after which you can find the generated documentation in the directory `target/site/apidocs/`.
+If you have just upgraded and are having trouble logging into the visualizer,
+such as seeing a "500 server error" instead of the usual page, you may try to recover by deleting files/system and clearing out the localhost cookies from your browser.
+
+
+Configuration
+-------------
+
+Three server-configuration files are provided as examples; all can be used by specifying them as the value of the --config option, or by filling in their names in the Server-config field on the GUI. The config `short-game.props` runs a very short simulation session, about 4 days. The config `2week-game.props` runs a sim slightly longer than 2 weeks, enough to see two cycles of peak-demand assessment. The config `pause.props` is a roughly 4-day session that allows brokers to pause the server. If you want to use these configs with the visualizer, you will need to copy them to files/admin/config.
+
+Access to code resources
+------------------------
+
+The server and other project assets are archived in several repos under [the github Power TAC organization page](https://github.com/organizations/powertac). Many of those repos are no longer active; the currently active repos include
+* [powertac-core](https://github.com/powertac/powertac-core), which includes the domain model and the messaging and logging infrastructure used by both the server and by brokers;
+* [powertac-server](https://github.com/powertac/powertac-server), which includes the simulation server as well as [the project issue tracker](https://github.com/powertac/powertac-server/issues) and the [project developer's wiki](https://github.com/powertac/powertac-server/wiki);
+* [sample-broker](https://github.com/powertac/sample-broker), the java-based example broker that serves as an illustration of how brokers may be constructed;
+* [powertac-tournament-scheduler](https://github.com/powertac/powertac-tournament-scheduler), the web application that runs copies of the server in tournament mode; and
+* [powertac-tools](https://github.com/powertac/powertac-tools), a collection of analysis tools for working with logs generated by the server.
+
+The [developer's wiki](https://github.com/powertac/powertac-server/wiki/) contains a wealth of detail on the design of the Power TAC server and associated infrastructure, as well as instructions for working with the code. You may wish to subscribe to the [developer's mailing list](http://power-tac-developers.975333.n3.nabble.com) for release announcements, discussion on tournaments, proposals for new features, and general relevant discussions among server and broker developers.
+
+Bug reporting
+-------------
+
+If you believe you have found a bug and can describe it with some degree of accuracy, you are welcome to [create an issue](https://github.com/powertac/powertac-server/issues). If you have a question or a suggestion for the development team, you are welcome to post a message to the developer's mailing list. Keep in mind that the development team is entirely composed of volunteers and students, and although we will do our best to respond in a timely fashion, response will not always be immediate. 
+
+Please let us know what you think of the Power TAC system, and how we can improve our software and processes.
+
+John Collins, Wolf Ketter, and the Power TAC development team: Jurica Babic, Govert Buijs, Antonios Chrysopoulos, Mathijs de Weerdt, Josh Edeen, Ryan Finneman, Erik Kemperman, Frederik Milkau, Nguyen Nguyen, Erik Onarheim, Shashank Pande, Markus Peters, Vedran Podobnik, Kailash Ramanathan, Prashant Reddy, Andreas Symeonidis, and Konstantina Valogianni

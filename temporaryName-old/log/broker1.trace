@@ -1,0 +1,8 @@
+7892 INFO  core.BrokerRunner: Starting session 1
+7898 INFO  core.BrokerPropertiesService: adding broker.properties
+7972 INFO  core.BrokerPropertiesService: Validating resource file:/mnt/c/Users/HP/MIEIC/TNE/feup-tne-PowerTAC/temporaryName/target/classes/config/adapter.xml
+7994 INFO  core.BrokerPropertiesService: loading config from file:/mnt/c/Users/HP/MIEIC/TNE/feup-tne-PowerTAC/temporaryName/target/classes/config/adapter.xml
+8673 ERROR config.Configurator: no configurable property named rawXml on class org.powertac.samplebroker.core.BrokerMessageReceiver
+8673 ERROR config.Configurator: no configurable property named xmlForwardType on class org.powertac.samplebroker.core.BrokerMessageReceiver
+9924 INFO  grpc.GrpcSocketAdapter: Listening on port 1234 for GRPC rpc calls
+39926 ERROR grpc.GrpcSocketAdapter: Client not connected, timing out and exiting

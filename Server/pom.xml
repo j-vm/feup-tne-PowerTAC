@@ -5,28 +5,29 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>sample-broker</artifactId>
-  <packaging>jar</packaging>
+  <artifactId>server-distribution</artifactId>
+  <packaging>pom</packaging>
 
-  <name>sample-broker</name>
-  <description>Standalone or server-resident sample broker implementation</description>
-  <url>http://www.powertac.org/</url>
+  <name>Power TAC distribution</name>
+  <description>Support for download and execution of the Power TAC server</description>
+  <url>https://github.com/powertac/server-distribution/</url>
 
   <parent>
     <groupId>org.powertac</groupId>
-    <artifactId>powertac-parent</artifactId>
-    <version>1.7.0</version>
+    <artifactId>powertac-server</artifactId>
+    <version>1.8.0-SNAPSHOT</version>
     <relativePath />
   </parent>
 
   <properties>
-    <powertac.version>1.7.0</powertac.version>
-    <exec.args></exec.args>
+    <powertac-server.version>1.8.0-SNAPSHOT</powertac-server.version>
+    <jetty.version>9.3.11.v20160721</jetty.version>
     <syst.args></syst.args>
+    <exec.args></exec.args>
   </properties>
 
-<!-- Sonatype OSS repo for resolving snapshot dependencies -->
-
+  
+  <!-- Sonatype OSS repo for resolving snapshot dependencies -->
   <repositories>
     <repository>
       <id>sonatype</id>
@@ -34,164 +35,138 @@
     </repository>
   </repositories>
 
-  <dependencies>
 
-    <!-- Power TAC -->
-    <dependency>
-      <groupId>org.powertac</groupId>
-      <artifactId>broker-core</artifactId>
-      <version>${powertac.version}</version>
-    </dependency>
+  <profiles>
+    <!-- Command-line setup -->
 
+    <profile>
+      <id>cli</id>
 
-    <!-- Testing; these are NOT transitive -->
+      <dependencies>
+        <dependency>
+          <groupId>org.powertac</groupId>
+          <artifactId>server-main</artifactId>
+          <version>${powertac-server.version}</version>
+        </dependency>
+      </dependencies>
 
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
+      <build>
+        <finalName>run-cli</finalName>
+        <defaultGoal>exec:exec</defaultGoal>
+        <plugins>
+        <!-- ... headless server execution ...
+             mvn -Pcli -Dexec.args="cmd-line-args"
+        ... should turn into
+             mvn exec:exec -Dexec.executable="java" -Dexec.args="-server -Xmx1024m -classpath %classpath org.powertac.server.PowerTacServer cmd-line-args"
+        -->
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <executable>java</executable>
+              <commandlineArgs>-server -Xmx1024m -Dserver.pomId=${project.parent.version} -classpath %classpath ${syst.args} org.powertac.server.PowerTacServer ${exec.args}</commandlineArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
 
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>${mockito.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-  </dependencies>
-
-
-  <build>
-
-    <plugins>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <executable>java</executable>
-          <commandlineArgs>-server -Xmx512m -classpath %classpath ${syst.args} org.powertac.samplebroker.core.BrokerMain ${exec.args}</commandlineArgs>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <configuration>
-          <createDependencyReducedPom>false</createDependencyReducedPom>
-          <transformers>
-            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-              <resource>META-INF/spring.handlers</resource>
-            </transformer>
-            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-              <resource>META-INF/spring.schemas</resource>
-            </transformer>
-            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-              <mainClass>org.powertac.samplebroker.core.BrokerMain</mainClass>
-            </transformer>
-          </transformers>
-        </configuration>
-      </plugin>
-
-    </plugins>
-
-  </build>
+    </profile>
 
 
-  <organization>
-    <name>Power TAC</name>
-    <url>http://www.powertac.org/</url>
-  </organization>
+    <!-- Web visualizer2 setup -->
+    <profile>
+      <id>web2</id>
 
-  <issueManagement>
-    <system>github</system>
-    <url>https://github.com/powertac/powertac-server/issues/</url>
-  </issueManagement>
+      <dependencies>
+        <dependency>
+          <groupId>org.powertac</groupId>
+          <artifactId>visualizer2</artifactId>
+          <version>${powertac-server.version}</version>
+          <type>war</type>
+        </dependency>
+      </dependencies>
 
+      <properties>
+        <maven-exec.flags>-server -Xmx1024m -Dserver.pomId=${project.parent.version} -classpath %classpath</maven-exec.flags>
+        <maven-exec.class>org.powertac.server.PowerTacServer</maven-exec.class>
+        <maven-exec.args></maven-exec.args>
+      </properties>
 
-  <licenses>
-    <license>
-      <name>Apache 2</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-      <comments>A business-friendly OSS license</comments>
-    </license>
-  </licenses>
+      <build>
+        <finalName>run-web2</finalName>
+        <defaultGoal>package exec:exec</defaultGoal>
 
+        <plugins>
 
-  <developers>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>${maven-dependency.version}</version>
+            <executions>
+              <execution>
+                <id>copy-war-to-lib-folder</id>
+                <phase>process-sources</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <overWriteSnapshots>true</overWriteSnapshots>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>org.powertac</groupId>
+                      <artifactId>visualizer2</artifactId>
+                      <version>${powertac-server.version}</version>
+                      <type>war</type>
+                      <overWrite>true</overWrite>
+                      <outputDirectory>
+                        ${project.build.directory}/visualizer2
+                      </outputDirectory>
+                      <destFileName>
+                        visualizer2-${powertac-server.version}.war
+                      </destFileName>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
 
-    <developer>
-      <id>john</id>
-      <name>John Collins</name>
-      <email>jcollins.cs@gmail.com</email>
-      <url>http://www.cs.umn.edu/~jcollins/</url>
-      <organization>University of Minnesota</organization>
-      <roles>
-        <role>game designer</role>
-        <role>architect</role>
-        <role>project manager</role>
-        <role>developer</role>
-      </roles>
-      <timezone>-6</timezone>
-    </developer>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <executable>java</executable>
+              <commandlineArgs>-Dserver.pomId=${project.parent.version} ${syst.args} -jar ${project.build.directory}/visualizer2/visualizer2-${powertac-server.version}.war ${exec.args}</commandlineArgs>
+            </configuration>
+          </plugin>
 
-    <developer>
-      <id>wolf</id>
-      <name>Wolf Ketter</name>
-      <email>wolf.ketter@gmail.com</email>
-      <url>http://ketter.ws/</url>
-      <organization>Rotterdam School of Management, Erasmus University</organization>
-      <roles>
-        <role>project leader</role>
-        <role>game designer</role>
-      </roles>
-      <timezone>+1</timezone>
-    </developer>
+        </plugins>
 
-  </developers>
+      </build>
 
-  <reporting>
+    </profile>
 
-    <plugins>
+  </profiles>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>javadoc</report>
-              <report>test-javadoc</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-        <configuration>
-          <includeDependencySources>true</includeDependencySources>
-          <includeTransitiveDependencySources>true</includeTransitiveDependencySources>
-          <dependencySourceIncludes>
-            <dependencySourceInclude>org.powertac:*</dependencySourceInclude>
-          </dependencySourceIncludes>
-        </configuration>
-      </plugin>
-
-    </plugins>
-
-  </reporting>
 
   <scm>
-    <connection>scm:git:git//github.com/powertac/sample-broker.git</connection>
-    <developerConnection>scm:git:git@github.com:powertac/sample-broker.git</developerConnection>
-    <url>https://github.com/powertac/sample-broker/</url>
+    <connection>scm:git:git//github.com/powertac/server-distribution.git</connection>
+    <developerConnection>scm:git:git@github.com:powertac/server-distribution.git</developerConnection>
+    <url>https://github.com/powertac/server-distribution/</url>
   </scm>
 
 </project>
