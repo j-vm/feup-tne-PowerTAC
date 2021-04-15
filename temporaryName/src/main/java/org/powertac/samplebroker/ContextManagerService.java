@@ -91,7 +91,8 @@ implements Initializable
    */
   public void handleMessage (DistributionReport dr)
   {
-    // TODO - use this data
+    log.info("DistributionReport = ");
+    log.info(dr.toString());
   }
   
   /**
