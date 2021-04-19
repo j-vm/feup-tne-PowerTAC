@@ -94,7 +94,7 @@ public class ContextManagerService implements Initializable {
    */
   public void handleMessage(DistributionReport dr) {
     try{
-      System.out.println("DistributionReport");
+      // System.out.println("Energy Report - " +  dr.getTimeslot());
       HashMap<String,Object> hM = new HashMap<String, Object>();
 
       hM.put("TotalConsumption", dr.getTotalConsumption());
@@ -103,8 +103,7 @@ public class ContextManagerService implements Initializable {
 
       var energyReport = new JSONObject(hM);
       pyComs.trigger(energyReport, PyComs.jsonType.get("energyReportType")); 
-      System.out.println("DistributionReport1");
-
+      // System.out.println("End Energy Report.");
     }
     catch(Exception e){
       System.err.println("Distribution report Exception:");
@@ -141,7 +140,7 @@ public class ContextManagerService implements Initializable {
       PyComs pyComs = context.getBean(PyComs.class);
       pyComs.trigger(competitionJson, PyComs.jsonType.get("competitionJsonType")); 
 
-      System.out.println("Competition1");
+      System.out.println("Competition - " + "-1");
 
       context.close();
     }

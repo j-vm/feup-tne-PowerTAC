@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import static java.util.Map.entry;    
+import static java.util.Map.entry;
+
+import java.util.ArrayList;    
 
 @Service("pyComs")
 public class PyComs {
@@ -14,8 +16,8 @@ public class PyComs {
     public static HashMap<Integer, JSONObject> competitionJson = new HashMap<>();
 
     // Market Manager Service
-    public static HashMap<Integer, JSONObject> clearedTradeJson = new HashMap<>();
-    public static HashMap<Integer, JSONObject> orderbookJson = new HashMap<>();
+    public static HashMap<Integer, ArrayList<JSONObject>> clearedTradeJson = new HashMap<>();
+    public static HashMap<Integer, ArrayList<JSONObject>> orderbookJson = new HashMap<>();
     public static HashMap<Integer, JSONObject> weatherForecastJson = new HashMap<>();
     public static HashMap<Integer, JSONObject> weatherJson = new HashMap<>();
 
@@ -28,27 +30,34 @@ public class PyComs {
         entry("weatherJsonType", "weatherJsonType")
     ); 
 
+    // Agora nós queremos agrupar os dados em base.
+    // Sempre que passar à base seguinte, considera-se que todas as mensagens não recebidas
+    // não chegarão.
+
     public void trigger(JSONObject obj, String type){
         String currSlot = obj.get("timeslotIndex").toString(); 
     
         switch(type){
             case "energyReportType":
-                energyReportMap.put(Integer.parseInt(currSlot), obj); // Tested
+                energyReportMap.put(Integer.parseInt(currSlot), obj);
                 break;
             case "competitionJsonType":
-                competitionJson.put(Integer.parseInt(currSlot), obj); // Tested
+                competitionJson.put(Integer.parseInt(currSlot), obj);
                 break;
             case "clearedTradeJsonType":
-                clearedTradeJson.put(Integer.parseInt(currSlot), obj); // Tested
+                // Can't be done this way.
+                // clearedTradeJson.put(Integer.parseInt(currSlot), obj);
+                
                 break;
             case "orderbookJsonType":
-                orderbookJson.put(Integer.parseInt(currSlot), obj); // Tested
+                // Can't be done this way.
+                // orderbookJson.put(Integer.parseInt(currSlot), obj);
                 break;
             case "weatherForecastJsonType":
-                weatherForecastJson.put(Integer.parseInt(currSlot), obj); // Tested
+                weatherForecastJson.put(Integer.parseInt(currSlot), obj);
                 break;
             case "weatherJsonType":
-                weatherJson.put(Integer.parseInt(currSlot), obj); // Tested
+                weatherJson.put(Integer.parseInt(currSlot), obj);
                 break;
         }
 

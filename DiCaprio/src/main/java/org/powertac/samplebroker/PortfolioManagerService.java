@@ -30,8 +30,6 @@ import org.powertac.common.Competition;
 import org.powertac.common.CustomerInfo;
 import org.powertac.common.Rate;
 import org.powertac.common.RegulationRate;
-import org.powertac.common.RegulationRate.ResponseTime;
-import org.powertac.common.Tariff;
 import org.powertac.common.TariffSpecification;
 import org.powertac.common.TariffTransaction;
 import org.powertac.common.TimeService;
@@ -54,7 +52,6 @@ import org.powertac.samplebroker.interfaces.MarketManager;
 import org.powertac.samplebroker.interfaces.PortfolioManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.powertac.samplebroker.util.PyComs;
 
 /**
  * Handles portfolio-management responsibilities for the broker. This
