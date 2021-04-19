@@ -46,9 +46,7 @@ import org.powertac.samplebroker.interfaces.Initializable;
 import org.powertac.samplebroker.interfaces.MarketManager;
 import org.powertac.samplebroker.interfaces.PortfolioManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;                                  
+import org.springframework.stereotype.Service;                          
 
 /**
  * Handles market interactions on behalf of the broker.
@@ -171,14 +169,23 @@ implements MarketManager, Initializable, Activatable
    */
   public synchronized void handleMessage (ClearedTrade ct)
   {
-    var clearedTrade = new HashMap<String, Object>();
-    clearedTrade.put("timeslotIndex", ct.getTimeslotIndex());
-    clearedTrade.put("executionMWh", ct.getExecutionMWh());
-    clearedTrade.put("executionPrice", ct.getExecutionPrice());
-    clearedTrade.put("dateExecuted", ct.getDateExecuted());
+    try {
+      System.out.println("ClearedTrade");
+      var clearedTrade = new HashMap<String, Object>();
+      clearedTrade.put("timeslotIndex", ct.getTimeslotIndex());
+      clearedTrade.put("executionMWh", ct.getExecutionMWh());
+      clearedTrade.put("executionPrice", ct.getExecutionPrice());
+      clearedTrade.put("dateExecuted", ct.getDateExecuted());
+      
+      JSONObject clearedTradeJson =  new JSONObject(clearedTrade);
+      pyComs.trigger(clearedTradeJson, PyComs.jsonType.get("clearedTradeJsonType"));
+      System.out.println("ClearedTrade1");
+    }
+    catch(Exception e){
+      System.err.println("Cleared trade Exception:");
+      System.err.println(e);
+    }
     
-    JSONObject clearedTradeJson =  new JSONObject(clearedTrade);
-    pyComs.trigger(clearedTradeJson, PyComs.jsonType.get("clearedTradeJsonType"));
   }
 
   /**
@@ -260,15 +267,21 @@ implements MarketManager, Initializable, Activatable
    */
   public synchronized void handleMessage (Orderbook orderbook)
   {
-    System.out.println("orderbook");
-    JSONObject orderbookJson = new JSONObject();
-    orderbookJson.put("timeslotIndex", orderbook.getTimeslotIndex());
-    orderbookJson.put("clearingPrice", orderbook.getClearingPrice());
-    orderbookJson.put("asks", orderbook.getAsks());
-    orderbookJson.put("bids", orderbook.getBids());
-    System.out.println("orderbook1");
+    try{
+      System.out.println("orderbook");
+      JSONObject orderbookJson = new JSONObject();
+      orderbookJson.put("timeslotIndex", orderbook.getTimeslotIndex());
+      orderbookJson.put("clearingPrice", orderbook.getClearingPrice());
+      orderbookJson.put("asks", orderbook.getAsks());
+      orderbookJson.put("bids", orderbook.getBids());
 
-    pyComs.trigger(orderbookJson, PyComs.jsonType.get("orderbookJsonType")); 
+      pyComs.trigger(orderbookJson, PyComs.jsonType.get("orderbookJsonType")); 
+      System.out.println("orderbook1");
+    }
+    catch(Exception e){
+      System.err.println("Order book Exception:");
+      System.err.println(e);
+    }
   }
   
   /**
@@ -276,13 +289,20 @@ implements MarketManager, Initializable, Activatable
    */
   public synchronized void handleMessage (WeatherForecast forecast)
   {
-    System.out.println("WeatherForecast");
-    var weatherForecastJson = new JSONObject();
-    weatherForecastJson.put("timelotIndex", forecast.getTimeslotIndex());
-    weatherForecastJson.put("prediction", forecast.getPredictions());
-    System.out.println("WeatherForecast1");
+    try{
+      System.out.println("WeatherForecast");
+      var weatherForecastJson = new JSONObject();
+      weatherForecastJson.put("timeslotIndex", forecast.getTimeslotIndex());
+      weatherForecastJson.put("prediction", forecast.getPredictions());
+      
+      pyComs.trigger(weatherForecastJson, PyComs.jsonType.get("weatherForecastJsonType")); 
 
-    pyComs.trigger(weatherForecastJson, PyComs.jsonType.get("weatherForecastJson")); 
+      System.out.println("WeatherForecast1");
+    }
+    catch(Exception e){
+      System.err.println("Weather Forecast Exception:");
+      System.err.println(e);
+    }
   }
 
   /**
@@ -290,14 +310,22 @@ implements MarketManager, Initializable, Activatable
    */
   public synchronized void handleMessage (WeatherReport report)
   {
-    var weatherJson = new JSONObject();
-    weatherJson.put("temperature", report.getTemperature());
-    weatherJson.put("windDirection", report.getWindDirection());
-    weatherJson.put("windSpeed",report.getWindSpeed());
-    weatherJson.put("cloudCover", report.getCloudCover());
-    weatherJson.put("timeslotIndex", report.getTimeslotIndex());
+    try{
+      System.out.println("WeatherReport");
+      var weatherJson = new JSONObject();
+      weatherJson.put("temperature", report.getTemperature());
+      weatherJson.put("windDirection", report.getWindDirection());
+      weatherJson.put("windSpeed",report.getWindSpeed());
+      weatherJson.put("cloudCover", report.getCloudCover());
+      weatherJson.put("timeslotIndex", report.getTimeslotIndex());
 
-    pyComs.trigger(weatherJson, PyComs.jsonType.get("weatherJsonType")); 
+      pyComs.trigger(weatherJson, PyComs.jsonType.get("weatherJsonType")); 
+      System.out.println("WeatherReport1");
+    }
+    catch(Exception e){
+      System.err.println("Weather Report Exception:");
+      System.err.println(e);
+    }
   }
 
   /**

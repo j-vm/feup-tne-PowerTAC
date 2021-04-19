@@ -64,14 +64,6 @@ public class ContextManagerService implements Initializable {
   public void initialize(BrokerContext broker) {
     master = broker;
     propertiesService.configureMe(this);
-    // --- no longer needed ---
-    // for (Class<?> clazz: Arrays.asList(BankTransaction.class,
-    // CashPosition.class,
-    // DistributionReport.class,
-    // Competition.class,
-    // java.util.Properties.class)) {
-    // broker.registerMessageHandler(this, clazz);
-    // }
   }
 
   // -------------------- message handlers ---------------------
@@ -85,7 +77,6 @@ public class ContextManagerService implements Initializable {
    */
   public void handleMessage (BankTransaction btx)
   {
-    // TODO - handle this
   }
 
   /**
@@ -102,20 +93,23 @@ public class ContextManagerService implements Initializable {
    * summed across all brokers.
    */
   public void handleMessage(DistributionReport dr) {
-    System.out.println("DistributionReport");
-    HashMap<String,Object> hM = new HashMap<String, Object>();
-    // int timeSlotIndex = dr.getTimeslotIndex();
+    try{
+      System.out.println("DistributionReport");
+      HashMap<String,Object> hM = new HashMap<String, Object>();
 
-    hM.put("TotalConsumption", dr.getTotalConsumption());
-    hM.put("TotalProduction", dr.getTotalProduction());
-    // hM.put("timeslotIndex", timeSlotIndex);
+      hM.put("TotalConsumption", dr.getTotalConsumption());
+      hM.put("TotalProduction", dr.getTotalProduction());
+      hM.put("timeslotIndex", dr.getTimeslot());
 
-    var energyReport = new JSONObject(hM);
-    
-    System.out.println("DistributionReport1");
-    
+      var energyReport = new JSONObject(hM);
+      pyComs.trigger(energyReport, PyComs.jsonType.get("energyReportType")); 
+      System.out.println("DistributionReport1");
 
-    pyComs.trigger(energyReport, PyComs.jsonType.get("energyReportType")); 
+    }
+    catch(Exception e){
+      System.err.println("Distribution report Exception:");
+      System.err.println(e);
+    }
   }
 
   /**
@@ -126,7 +120,6 @@ public class ContextManagerService implements Initializable {
   public void handleMessage(Competition comp) {
 
     try {
-      System.out.println("Competition");
       AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
       context.scan("org.powertac.samplebroker.util");
       context.refresh();
@@ -140,15 +133,15 @@ public class ContextManagerService implements Initializable {
       var hM = new HashMap<String, Object>();
       hM.put("marketBootstrapData", marketBootstrapData);
       hM.put("noCompetitors",noCompetitors);
-      hM.put("noCustomer ", noCustomer);
-      hM.put("timeslotIndex ", "-10");
+      hM.put("noCustomer", noCustomer);
+      hM.put("timeslotIndex", "-1");
       
       var competitionJson =  new JSONObject(hM);
-      System.out.println("Competition1");
-
+      
       PyComs pyComs = context.getBean(PyComs.class);
-
       pyComs.trigger(competitionJson, PyComs.jsonType.get("competitionJsonType")); 
+
+      System.out.println("Competition1");
 
       context.close();
     }

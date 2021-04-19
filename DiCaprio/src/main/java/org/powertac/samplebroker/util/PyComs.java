@@ -29,26 +29,26 @@ public class PyComs {
     ); 
 
     public void trigger(JSONObject obj, String type){
-        String currSlot = (String) obj.get("timeslotIndex"); 
-        System.out.println(currSlot);
+        String currSlot = obj.get("timeslotIndex").toString(); 
+    
         switch(type){
             case "energyReportType":
-                energyReportMap.put(Integer.parseInt(currSlot), obj);
+                energyReportMap.put(Integer.parseInt(currSlot), obj); // Tested
                 break;
             case "competitionJsonType":
-                competitionJson.put(Integer.parseInt(currSlot), obj);
+                competitionJson.put(Integer.parseInt(currSlot), obj); // Tested
                 break;
             case "clearedTradeJsonType":
-                clearedTradeJson.put(Integer.parseInt(currSlot), obj);
+                clearedTradeJson.put(Integer.parseInt(currSlot), obj); // Tested
                 break;
             case "orderbookJsonType":
-                orderbookJson.put(Integer.parseInt(currSlot), obj);
+                orderbookJson.put(Integer.parseInt(currSlot), obj); // Tested
                 break;
             case "weatherForecastJsonType":
-                weatherForecastJson.put(Integer.parseInt(currSlot), obj);
+                weatherForecastJson.put(Integer.parseInt(currSlot), obj); // Tested
                 break;
             case "weatherJsonType":
-                weatherJson.put(Integer.parseInt(currSlot), obj);
+                weatherJson.put(Integer.parseInt(currSlot), obj); // Tested
                 break;
         }
 
