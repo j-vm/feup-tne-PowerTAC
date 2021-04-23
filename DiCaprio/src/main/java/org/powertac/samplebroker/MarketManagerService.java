@@ -272,14 +272,11 @@ implements MarketManager, Initializable, Activatable
       //System.out.println("Orderbook - " + orderbook.getTimeslotIndex());
 
       JSONObject orderbookJson = new JSONObject();
-
-      int base = orderbook.getTimeslotIndex() - orderbook.getTimeslot().slotInDay();
-
       orderbookJson.put("timeslotIndex", orderbook.getTimeslotIndex());
       orderbookJson.put("clearingPrice", orderbook.getClearingPrice());
       orderbookJson.put("asks", orderbook.getAsks());
       orderbookJson.put("bids", orderbook.getBids());
-      orderbookJson.put("base", base);
+      orderbookJson.put("slotInDay", orderbook.getTimeslot().slotInDay());
 
       pyComs.trigger(orderbookJson, PyComs.jsonType.get("orderbookJsonType")); 
      // System.out.println("End Orderbook");

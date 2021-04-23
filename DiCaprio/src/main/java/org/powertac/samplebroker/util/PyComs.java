@@ -20,8 +20,7 @@ public class PyComs {
     public static HashMap<Integer, ArrayList<JSONObject>> orderbookJson = new HashMap<>();
     public static HashMap<Integer, JSONObject> weatherForecastJson = new HashMap<>();
     public static HashMap<Integer, JSONObject> weatherJson = new HashMap<>();
-    public static int lastIndex = 0;
-    public static int mapLastIndex = 0;
+    public static int lastIndexCleared, mapLastIndexCleared, lastIndexOrderBook, mapLastIndexOrderBook = 0;
 
     public static Map<String, String> jsonType = Map.ofEntries(
         entry("energyReportType", "energyReportType"),
@@ -46,6 +45,16 @@ public class PyComs {
         return new JSONObject(clearedTrade);
     }
 
+    public JSONObject createMockOrderbook(int slotInDay){
+        var orderbook = new HashMap<String, Object>();
+        orderbook.put("timeslotIndex", "none");
+        orderbook.put("clearingPrice", "none");
+        orderbook.put("asks", "none");
+        orderbook.put("bids", "none");
+        orderbook.put("slotInDay", slotInDay);
+        return new JSONObject(orderbook);
+    }
+
     public void trigger(JSONObject obj, String type){
         String currSlot = obj.get("timeslotIndex").toString(); 
     
@@ -57,48 +66,80 @@ public class PyComs {
                 competitionJson.put(Integer.parseInt(currSlot), obj);
                 break;
             case "clearedTradeJsonType":
-                System.out.println(lastIndex);
                 int slotInDay = Integer.parseInt(obj.get("slotInDay").toString()); 
 
-                if(lastIndex - 1 == slotInDay) {
+                if(lastIndexCleared - 1 == slotInDay) {
                     System.out.println("Message was late");
-                } else if(lastIndex - 2 == slotInDay) {
+                } else if(lastIndexCleared - 2 == slotInDay) {
                     System.out.println("Message was late");
                 } else {
                     //Fills missing values
                     ArrayList<JSONObject> clearedTrades;
                     //slotInDay missing is 0
-
-                    if(slotInDay == 1 && lastIndex == 23) {
-                        clearedTrades =  clearedTradeJson.get(mapLastIndex); 
+                    if(slotInDay == 1 && lastIndexCleared == 23) {
+                        clearedTrades =  clearedTradeJson.get(mapLastIndexCleared); 
                         clearedTrades.add(createMockClearedTrade(0)); //0 is the last index
-                        lastIndex = 0;
+                        lastIndexCleared = 0;
                     }
-                    if(slotInDay == 0 && lastIndex == 22) {
-                        clearedTrades =  clearedTradeJson.get(mapLastIndex); 
+                    if(slotInDay == 0 && lastIndexCleared == 22) {
+                        clearedTrades =  clearedTradeJson.get(mapLastIndexCleared); 
                         clearedTrades.add(createMockClearedTrade(23));
-                        lastIndex = 0;
-                    } else if(slotInDay == 1 || (slotInDay == 2 && lastIndex == 0)  || (slotInDay == 3 && lastIndex == 0) || (slotInDay == 4 && lastIndex == 0)) {
-                        clearedTrades =  clearedTradeJson.get(mapLastIndex);  
+                        lastIndexCleared = 0;
+                    } else if(slotInDay == 1 || (slotInDay == 2 && lastIndexCleared == 0)  || (slotInDay == 3 && lastIndexCleared == 0) || (slotInDay == 4 && lastIndexCleared == 0)) {
+                        clearedTrades =  clearedTradeJson.get(mapLastIndexCleared);  
                         clearedTrades = new ArrayList<>();
-                        mapLastIndex++;
-                        for(int i=lastIndex+1; i < slotInDay; i++) {
+                        mapLastIndexCleared++;
+                        for(int i=lastIndexCleared+1; i < slotInDay; i++) {
                             clearedTrades.add(createMockClearedTrade(i));
                         } 
                     } else {
-                        clearedTrades =  clearedTradeJson.get(mapLastIndex); 
-                        for(int i=lastIndex+1; i < slotInDay; i++) {
+                        clearedTrades =  clearedTradeJson.get(mapLastIndexCleared); 
+                        for(int i=lastIndexCleared +1; i < slotInDay; i++) {
                             clearedTrades.add(createMockClearedTrade(i));
                         } 
                     }  
                     clearedTrades.add(obj);
-                    clearedTradeJson.put(mapLastIndex, clearedTrades);  
-                    lastIndex = slotInDay;
+                    clearedTradeJson.put(mapLastIndexCleared, clearedTrades);  
+                    lastIndexCleared = slotInDay;
                 }
                 break;
             case "orderbookJsonType":
-                // Can't be done this way.
-                // orderbookJson.put(Integer.parseInt(currSlot), obj);
+                int slotInDayOrder = Integer.parseInt(obj.get("slotInDay").toString()); 
+
+                if(lastIndexOrderBook - 1 == slotInDayOrder) {
+                    System.out.println("Message was late");
+                } else if(lastIndexOrderBook - 2 == slotInDayOrder) {
+                    System.out.println("Message was late");
+                } else {
+                    //Fills missing values
+                    ArrayList<JSONObject> orderBooks;
+                    //slotInDay missing is 0
+                    if(slotInDayOrder == 1 && lastIndexOrderBook == 23) {
+                        orderBooks =  orderbookJson.get(mapLastIndexOrderBook); 
+                        orderBooks.add(createMockOrderbook(0)); //0 is the last index
+                        lastIndexOrderBook = 0;
+                    }
+                    if(slotInDayOrder == 0 && lastIndexOrderBook == 22) {
+                        orderBooks =  orderbookJson.get(mapLastIndexOrderBook); 
+                        orderBooks.add(createMockOrderbook(23));
+                        lastIndexOrderBook = 0;
+                    } else if(slotInDayOrder == 1 || (slotInDayOrder == 2 && lastIndexOrderBook == 0)  || (slotInDayOrder == 3 && lastIndexOrderBook == 0) || (slotInDayOrder == 4 && lastIndexOrderBook == 0)) {           
+                        orderBooks =  orderbookJson.get(mapLastIndexOrderBook);  
+                        orderBooks = new ArrayList<>();
+                        mapLastIndexOrderBook++;
+                        for(int i=lastIndexOrderBook+1; i < slotInDayOrder; i++) {
+                            orderBooks.add(createMockOrderbook(i));
+                        } 
+                    } else {
+                        orderBooks =  orderbookJson.get(mapLastIndexOrderBook); 
+                        for(int i=lastIndexOrderBook +1; i < slotInDayOrder; i++) {
+                            orderBooks.add(createMockOrderbook(i));
+                        } 
+                    }  
+                    orderBooks.add(obj);
+                    orderbookJson.put(mapLastIndexOrderBook, orderBooks);  
+                    lastIndexOrderBook = slotInDayOrder;
+                }
                 break;
             case "weatherForecastJsonType":
                 weatherForecastJson.put(Integer.parseInt(currSlot), obj);
