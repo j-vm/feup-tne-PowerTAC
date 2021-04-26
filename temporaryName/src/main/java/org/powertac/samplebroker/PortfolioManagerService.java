@@ -55,6 +55,9 @@ import org.powertac.samplebroker.interfaces.PortfolioManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.powertac.samplebroker.tariffoptimizer.InputManager;
+import org.powertac.samplebroker.tariffoptimizer.TariffManager;
+
 /**
  * Handles portfolio-management responsibilities for the broker. This
  * includes composing and offering tariffs, keeping track of customers and their
@@ -126,12 +129,15 @@ implements PortfolioManager, Initializable, Activatable
           description = "Default daily meter charge")
   private double defaultPeriodicPayment = -1.0;
 
+  
+  private TariffManager tariffManager;
   /**
    * Default constructor.
    */
   public PortfolioManagerService ()
   {
     super();
+    this.tariffManager = new TariffManager();
   }
 
   /**
@@ -260,6 +266,7 @@ implements PortfolioManager, Initializable, Activatable
    */
   public synchronized void handleMessage (TariffSpecification spec)
   {
+    //System.out.println("Tariff Specification: " + spec);
     Broker theBroker = spec.getBroker();
     if (brokerContext.getBrokerUsername().equals(theBroker.getUsername())) {
       if (theBroker != brokerContext.getBroker())
@@ -393,12 +400,13 @@ implements PortfolioManager, Initializable, Activatable
   public synchronized void activate (int timeslotIndex)
   {
     if (customerSubscriptions.size() == 0) {
-      // we (most likely) have no tariffs
-      createInitialTariffs();
+    	Map<PowerType, List<TariffSpecification>> newTariffs = this.tariffManager.createInitialTariffs(this.tariffRepo, this.competingTariffs, this.brokerContext);
+      //createInitialTariffs();
     }
     else {
       // we have some, are they good enough?
-      improveTariffs();
+    	Map<PowerType, List<TariffSpecification>> newTariffs = this.tariffManager.improveTariffs(timeslotIndex, this.tariffRepo, this.competingTariffs, this.brokerContext);
+      //improveTariffs();
     }
     for (CustomerRecord record: notifyOnActivation)
       record.activate();
