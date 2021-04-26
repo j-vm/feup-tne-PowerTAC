@@ -39,7 +39,7 @@ implements Initializable
 
   @Autowired
   private BrokerPropertiesService propertiesService;
-
+  
   BrokerContext master;
 
   // current cash balance

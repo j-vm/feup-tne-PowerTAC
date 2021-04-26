@@ -400,13 +400,13 @@ implements PortfolioManager, Initializable, Activatable
   public synchronized void activate (int timeslotIndex)
   {
     if (customerSubscriptions.size() == 0) {
-    	Map<PowerType, List<TariffSpecification>> newTariffs = this.tariffManager.createInitialTariffs(this.tariffRepo, this.competingTariffs, this.brokerContext);
-      //createInitialTariffs();
+    	Map<PowerType, TariffSpecification> newTariffs = this.tariffManager.createInitialTariffs(this.competingTariffs, this.brokerContext);
+      //add new tariffs
     }
     else {
       // we have some, are they good enough?
-    	Map<PowerType, List<TariffSpecification>> newTariffs = this.tariffManager.improveTariffs(timeslotIndex, this.tariffRepo, this.competingTariffs, this.brokerContext);
-      //improveTariffs();
+    	Map<PowerType, TariffSpecification> newTariffs = this.tariffManager.improveTariffs(timeslotIndex, this.tariffRepo, this.competingTariffs, this.brokerContext);
+      //iterate through newTariffs and supersede old ones;
     }
     for (CustomerRecord record: notifyOnActivation)
       record.activate();
