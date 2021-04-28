@@ -137,7 +137,6 @@ implements PortfolioManager, Initializable, Activatable
   public PortfolioManagerService ()
   {
     super();
-    this.tariffManager = new TariffManager();
   }
 
   /**
@@ -152,6 +151,8 @@ implements PortfolioManager, Initializable, Activatable
     customerSubscriptions = new LinkedHashMap<>();
     competingTariffs = new HashMap<>();
     notifyOnActivation.clear();
+
+    this.tariffManager = new TariffManager(this.tariffRepo, this.brokerContext);
   }
   
   // -------------- data access ------------------
@@ -399,13 +400,15 @@ implements PortfolioManager, Initializable, Activatable
   @Override // from Activatable
   public synchronized void activate (int timeslotIndex)
   {
+	  System.out.println("TIMESLOT INDEX: " + timeslotIndex);
+	  System.out.println("costumerSubscriptions: " + customerSubscriptions.size());
     if (customerSubscriptions.size() == 0) {
-    	Map<PowerType, TariffSpecification> newTariffs = this.tariffManager.createInitialTariffs(this.competingTariffs, this.brokerContext);
+    	this.tariffManager.createInitialTariffs(this.competingTariffs);
       //add new tariffs
     }
     else {
       // we have some, are they good enough?
-    	Map<PowerType, TariffSpecification> newTariffs = this.tariffManager.improveTariffs(timeslotIndex, this.tariffRepo, this.competingTariffs, this.brokerContext);
+    	this.tariffManager.improveTariffs(timeslotIndex, this.competingTariffs);
       //iterate through newTariffs and supersede old ones;
     }
     for (CustomerRecord record: notifyOnActivation)
@@ -542,7 +545,7 @@ implements PortfolioManager, Initializable, Activatable
           Rate rate = new Rate().withValue(rateValue);
           spec.addRate(rate);
           if (null != oldc)
-            spec.addSupersedes(oldc.getId());
+          spec.addSupersedes(oldc.getId());
           //mungId(spec, 6);
           tariffRepo.addSpecification(spec);
           brokerContext.sendMessage(spec);

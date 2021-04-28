@@ -1,4 +1,5 @@
 package org.powertac.samplebroker.tariffoptimizer;
+import org.powertac.common.Rate;
 import org.powertac.common.Tariff;
 import org.powertac.common.TariffSpecification;
 import org.powertac.common.enumerations.PowerType;
@@ -12,9 +13,17 @@ import java.util.Map;
 
 public class TariffManager {
 	
+	public TariffManager(TariffRepo tariffRepo, BrokerContext brokerContext) {
+		super();
+		this.tariffRepo = tariffRepo;
+		this.brokerContext = brokerContext;
+	}
+
 	private Map<PowerType, List<TariffSpecification>> competingTariffs;
+	private TariffRepo tariffRepo;
+	private BrokerContext brokerContext;
 	
-	public Map<PowerType, TariffSpecification> createInitialTariffs(Map<PowerType, List<TariffSpecification>> competingTariffs, BrokerContext brokerContext) {
+	public void createInitialTariffs(Map<PowerType, List<TariffSpecification>> competingTariffs) {
 		// TODO Auto-generated method stub	
 		Map<PowerType, TariffSpecification> initialTariffs = new HashMap<PowerType, TariffSpecification>();
 		this.competingTariffs = competingTariffs; 
@@ -22,20 +31,20 @@ public class TariffManager {
 		for (Map.Entry<PowerType, List<TariffSpecification>> entry : competingTariffs.entrySet()) {
 			//printTariffList(entry.getKey(), entry.getValue());
 			TariffSpecification newTariff= initialTariffMutator(entry.getValue());
-			initialTariffs.put(entry.getKey(), newTariff);
+			if(newTariff != null)
+				initialTariffs.put(entry.getKey(), newTariff);
 		}
-		
-		return initialTariffs;
+		for (Map.Entry<PowerType, TariffSpecification> initialTariff : initialTariffs.entrySet()) {
+			addNewTariff(initialTariff.getValue());
+		}
 	}
 
-	public Map<PowerType, TariffSpecification> improveTariffs(int timeslotIndex, TariffRepo tariffRepo,
-			Map<PowerType, List<TariffSpecification>> competingTariffs, BrokerContext brokerContext) {
-		System.out.println("Timeslot index: " + timeslotIndex);
+	public void improveTariffs(int timeslotIndex, Map<PowerType, List<TariffSpecification>> competingTariffs) {
+		System.out.println("IMPROVE TARIFFS: " + timeslotIndex);
 		// TODO Auto-generated method stub
-
 		this.competingTariffs = competingTariffs;
-		System.out.println("Tariff Repo: ");
-		var tariffs = tariffRepo.findAllTariffs();
+		System.out.println("MY TARIFFS:");
+		var tariffs = this.tariffRepo.findAllTariffs();
 		for (Tariff tariff : tariffs) {
 			System.out.println(tariff.toString());
 		}
@@ -44,7 +53,6 @@ public class TariffManager {
 		//alterar tarifas
 		//enviar tarifas alteradas
 		System.out.flush();
-		return null;
 	}
 	
 	private void printTariffList(PowerType powerType, List<TariffSpecification> tariffs) {
@@ -57,8 +65,20 @@ public class TariffManager {
 	private TariffSpecification initialTariffMutator(List<TariffSpecification> list) {
 		//TODO: 
 		// fce = sumt(Ce,t * -pdef) /  (sumt(Ce,t * -pv,i,t - pp,i) - psignup,i - Ff * pwithdraw,i - pwithdraw,0)
-		// selecionar o melhor da lista
-		// Remove exit cost then lowerTariff(tariff)
+		// selecionar o melhor da lista e não 0S (Usar tariffEvaluatorHelper)
+		if(list.get(0) != null) {
+			TariffSpecification competingSpec = list.get(0);
+			TariffSpecification spec = 
+		              new TariffSpecification(this.brokerContext.getBroker(),
+		                                      competingSpec.getPowerType());
+			List<Rate> rates = competingSpec.getRates();
+			for (Rate rate : rates) {				
+				spec.addRate(rate); //needs to lowerTariff
+			}
+			//TariffSpecification spec = lowerTariff(list.get(0));
+			spec.withEarlyWithdrawPayment(0);
+			return spec;
+		}
 		return null;
 	}
 	
@@ -69,6 +89,18 @@ public class TariffManager {
 
 	private TariffSpecification lowerTariff(TariffSpecification tariff) {
 		//TODO: Heuristic to lower tariff
-		return null;
+		
+		return tariff;
 	}
+	
+	private void addNewTariff(TariffSpecification spec) {
+	      this.tariffRepo.addSpecification(spec);
+	      this.brokerContext.sendMessage(spec);
+	}
+	
+	private void supersedeTariff(TariffSpecification oldSpec, TariffSpecification spec) {
+		spec.addSupersedes(oldSpec.getId());
+		addNewTariff(spec);
+	}
+	
 }
