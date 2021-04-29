@@ -11,7 +11,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class TariffManager {
+
+	double INITIAL_DECREASE = 0.2;
+	double PERIODIC_DECREASE = 0.05;
 	
 	public TariffManager(TariffRepo tariffRepo, BrokerContext brokerContext) {
 		super();
@@ -43,10 +47,20 @@ public class TariffManager {
 		System.out.println("IMPROVE TARIFFS: " + timeslotIndex);
 		// TODO Auto-generated method stub
 		this.competingTariffs = competingTariffs;
-		System.out.println("MY TARIFFS:");
-		var tariffs = this.tariffRepo.findAllTariffs();
-		for (Tariff tariff : tariffs) {
+		System.out.println("TARIFFS:");
+		System.out.println(tariffRepo.findAllTariffSpecifications().size());
+		var tariffs = this.tariffRepo.findAllTariffSpecifications();
+		for (TariffSpecification tariff : tariffs) {
 			System.out.println(tariff.toString());
+		}
+		if((timeslotIndex - 1) % 6 == 0) {
+			var myTariffs = tariffRepo.findTariffsByBroker(this.brokerContext.getBroker());
+			for (Tariff tariff : myTariffs) {
+				if(tariff.isActive()) {
+					supersedeTariff(lowerTariff(tariff.getTariffSpec(), this.PERIODIC_DECREASE), tariff.getId());
+					System.out.println("SUPERSEDED TARIFF");
+				}
+			}
 		}
 		//iterar por tariffRepo
 		//chamar o modelo
@@ -68,16 +82,16 @@ public class TariffManager {
 		// selecionar o melhor da lista e não 0S (Usar tariffEvaluatorHelper)
 		if(list.get(0) != null) {
 			TariffSpecification competingSpec = list.get(0);
-			TariffSpecification spec = 
+			TariffSpecification copiedSpec = 
 		              new TariffSpecification(this.brokerContext.getBroker(),
 		                                      competingSpec.getPowerType());
 			List<Rate> rates = competingSpec.getRates();
 			for (Rate rate : rates) {				
-				spec.addRate(rate); //needs to lowerTariff
+				copiedSpec.addRate(rate); //needs to lowerTariff
 			}
-			//TariffSpecification spec = lowerTariff(list.get(0));
-			spec.withEarlyWithdrawPayment(0);
-			return spec;
+			TariffSpecification loweredSpec = lowerTariff(copiedSpec, INITIAL_DECREASE);
+			loweredSpec.withEarlyWithdrawPayment(0);
+			return loweredSpec;
 		}
 		return null;
 	}
@@ -87,10 +101,26 @@ public class TariffManager {
 		return null;
 	}
 
-	private TariffSpecification lowerTariff(TariffSpecification tariff) {
+	
+	private TariffSpecification lowerTariff(TariffSpecification tariff, double decrease) {
 		//TODO: Heuristic to lower tariff
-		
-		return tariff;
+		TariffSpecification lowerTariff = new TariffSpecification(this.brokerContext.getBroker(),
+                tariff.getPowerType());
+		List<Rate> rates = tariff.getRates();
+		for (Rate rate : rates) {
+			Rate lowerRate = new Rate();
+			if(rate.isFixed()) {
+				//lower fixed rates (get params from rate and add to lowerRate) 
+				lowerRate.withValue(rate.getValue() * 1 - decrease);
+				lowerRate.withDailyBegin(rate.getDailyBegin());
+				lowerRate.withDailyEnd(rate.getDailyEnd());
+			}
+			else {
+				//lower Variable rates (get params from rate and add to lowerRate)
+			}
+			lowerTariff.addRate(rate);
+		}
+		return lowerTariff;
 	}
 	
 	private void addNewTariff(TariffSpecification spec) {
@@ -98,8 +128,8 @@ public class TariffManager {
 	      this.brokerContext.sendMessage(spec);
 	}
 	
-	private void supersedeTariff(TariffSpecification oldSpec, TariffSpecification spec) {
-		spec.addSupersedes(oldSpec.getId());
+	private void supersedeTariff(TariffSpecification spec, long oldTariffId) {
+		spec.addSupersedes(oldTariffId);
 		addNewTariff(spec);
 	}
 	
