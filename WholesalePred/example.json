@@ -1,0 +1,7 @@
+{
+    "metadata": {
+        "type": "train or test",
+        "model": "one of the algorithms names"
+    },
+    "payload": "The stuff"
+}
