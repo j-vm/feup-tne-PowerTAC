@@ -173,17 +173,14 @@ implements MarketManager, Initializable, Activatable
       System.out.println("ClearedTrade - " + ct.getTimeslotIndex());
       var clearedTrade = new HashMap<String, Object>();
       clearedTrade.put("timeslotIndex", ct.getTimeslotIndex());
-      
-      int base = ct.getTimeslotIndex() - ct.getTimeslot().slotInDay();
-
       clearedTrade.put("executionMWh", ct.getExecutionMWh());
       clearedTrade.put("executionPrice", ct.getExecutionPrice());
       clearedTrade.put("dateExecuted", ct.getDateExecuted());
-      clearedTrade.put("base", base);
+      clearedTrade.put("slotInDay", ct.getTimeslot().slotInDay());
       
       JSONObject clearedTradeJson =  new JSONObject(clearedTrade);
       pyComs.trigger(clearedTradeJson, PyComs.jsonType.get("clearedTradeJsonType"));
-      System.out.println("End ClearedTrade");
+      //System.out.println("End ClearedTrade");
     }
     catch(Exception e){
       System.err.println("Cleared trade Exception:");
@@ -272,20 +269,17 @@ implements MarketManager, Initializable, Activatable
   public synchronized void handleMessage (Orderbook orderbook)
   {
     try{
-      System.out.println("Orderbook - " + orderbook.getTimeslotIndex());
+      //System.out.println("Orderbook - " + orderbook.getTimeslotIndex());
 
       JSONObject orderbookJson = new JSONObject();
-
-      int base = orderbook.getTimeslotIndex() - orderbook.getTimeslot().slotInDay();
-
       orderbookJson.put("timeslotIndex", orderbook.getTimeslotIndex());
       orderbookJson.put("clearingPrice", orderbook.getClearingPrice());
       orderbookJson.put("asks", orderbook.getAsks());
       orderbookJson.put("bids", orderbook.getBids());
-      orderbookJson.put("base", base);
+      orderbookJson.put("slotInDay", orderbook.getTimeslot().slotInDay());
 
       pyComs.trigger(orderbookJson, PyComs.jsonType.get("orderbookJsonType")); 
-      System.out.println("End Orderbook");
+     // System.out.println("End Orderbook");
     }
     catch(Exception e){
       System.err.println("Order book Exception:");
