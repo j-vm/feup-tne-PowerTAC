@@ -267,7 +267,6 @@ implements PortfolioManager, Initializable, Activatable
    */
   public synchronized void handleMessage (TariffSpecification spec)
   {
-    //System.out.println("Tariff Specification: " + spec);
     Broker theBroker = spec.getBroker();
     if (brokerContext.getBrokerUsername().equals(theBroker.getUsername())) {
       if (theBroker != brokerContext.getBroker())
@@ -400,8 +399,6 @@ implements PortfolioManager, Initializable, Activatable
   @Override // from Activatable
   public synchronized void activate (int timeslotIndex)
   {
-	  System.out.println("TIMESLOT INDEX: " + timeslotIndex);
-	  System.out.println("costumerSubscriptions: " + customerSubscriptions.size());
     if (customerSubscriptions.size() == 0) {
     	this.tariffManager.createInitialTariffs(this.competingTariffs);
       //add new tariffs

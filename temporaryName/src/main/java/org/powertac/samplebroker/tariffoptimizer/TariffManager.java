@@ -1,8 +1,10 @@
 package org.powertac.samplebroker.tariffoptimizer;
+import org.powertac.common.Broker;
 import org.powertac.common.Rate;
 import org.powertac.common.Tariff;
 import org.powertac.common.TariffSpecification;
 import org.powertac.common.enumerations.PowerType;
+import org.powertac.common.msg.TariffRevoke;
 import org.powertac.common.repo.TariffRepo;
 import org.powertac.samplebroker.interfaces.BrokerContext;
 
@@ -30,35 +32,48 @@ public class TariffManager {
 	public void createInitialTariffs(Map<PowerType, List<TariffSpecification>> competingTariffs) {
 		// TODO Auto-generated method stub	
 		Map<PowerType, TariffSpecification> initialTariffs = new HashMap<PowerType, TariffSpecification>();
-		this.competingTariffs = competingTariffs; 
-		System.out.println("Competing Tariffs: ");
+		this.competingTariffs = competingTariffs;
 		for (Map.Entry<PowerType, List<TariffSpecification>> entry : competingTariffs.entrySet()) {
-			//printTariffList(entry.getKey(), entry.getValue());
+			System.out.println("Creating new Tariff: ");
 			TariffSpecification newTariff= initialTariffMutator(entry.getValue());
 			if(newTariff != null)
 				initialTariffs.put(entry.getKey(), newTariff);
 		}
 		for (Map.Entry<PowerType, TariffSpecification> initialTariff : initialTariffs.entrySet()) {
 			addNewTariff(initialTariff.getValue());
+			System.out.println(initialTariff.toString());
 		}
 	}
 
 	public void improveTariffs(int timeslotIndex, Map<PowerType, List<TariffSpecification>> competingTariffs) {
-		System.out.println("IMPROVE TARIFFS: " + timeslotIndex);
-		// TODO Auto-generated method stub
-		this.competingTariffs = competingTariffs;
-		System.out.println("TARIFFS:");
-		System.out.println(tariffRepo.findAllTariffSpecifications().size());
-		var tariffs = this.tariffRepo.findAllTariffSpecifications();
-		for (TariffSpecification tariff : tariffs) {
-			System.out.println(tariff.toString());
-		}
+		
 		if((timeslotIndex - 1) % 6 == 0) {
+			
+			System.out.println("");
+			System.out.println("");
+			System.out.println("Revision Period - Time: " + timeslotIndex);
+			System.out.println("________________________________________________");
+			System.out.println("Competing tariffs:");
+			System.out.println("");
+			
+			for (Map.Entry<PowerType, List<TariffSpecification>> entry : competingTariffs.entrySet())
+				printTariffSpecificationList(entry.getKey(), entry.getValue());
+	
+			System.out.println("");
+			System.out.println("TNA Tariff update:");
+			System.out.println("");
+			
 			var myTariffs = tariffRepo.findTariffsByBroker(this.brokerContext.getBroker());
+			System.out.println("MyTariffs: " + myTariffs.toString());
 			for (Tariff tariff : myTariffs) {
+				System.out.println("tariff is active?" + tariff.isActive());
 				if(tariff.isActive()) {
-					supersedeTariff(lowerTariff(tariff.getTariffSpec(), this.PERIODIC_DECREASE), tariff.getId());
-					System.out.println("SUPERSEDED TARIFF");
+
+					TariffSpecification newTariffSpec = lowerTariff(tariff.getTariffSpec(), this.PERIODIC_DECREASE); //SUBSTITUIR LOWER TARIFF COM MODELO AI
+					System.out.println(tariff.toString() + "  ->  " + newTariffSpec.toString());
+					System.out.println("");
+					
+					supersedeTariff(newTariffSpec, tariff.getTariffSpec());
 				}
 			}
 		}
@@ -69,7 +84,8 @@ public class TariffManager {
 		System.out.flush();
 	}
 	
-	private void printTariffList(PowerType powerType, List<TariffSpecification> tariffs) {
+
+	private void printTariffSpecificationList(PowerType powerType, List<TariffSpecification> tariffs) {
 		System.out.println(powerType.toString());
 		for (TariffSpecification tariff : tariffs) {
 			System.out.println(tariff.toString());
@@ -81,15 +97,10 @@ public class TariffManager {
 		// fce = sumt(Ce,t * -pdef) /  (sumt(Ce,t * -pv,i,t - pp,i) - psignup,i - Ff * pwithdraw,i - pwithdraw,0)
 		// selecionar o melhor da lista e não 0S (Usar tariffEvaluatorHelper)
 		if(list.get(0) != null) {
+			System.out.println("Mutating tariff: " + list.get(0).toString());
 			TariffSpecification competingSpec = list.get(0);
-			TariffSpecification copiedSpec = 
-		              new TariffSpecification(this.brokerContext.getBroker(),
-		                                      competingSpec.getPowerType());
-			List<Rate> rates = competingSpec.getRates();
-			for (Rate rate : rates) {				
-				copiedSpec.addRate(rate); //needs to lowerTariff
-			}
-			TariffSpecification loweredSpec = lowerTariff(copiedSpec, INITIAL_DECREASE);
+			TariffSpecification loweredSpec = lowerTariff(competingSpec, INITIAL_DECREASE, this.brokerContext.getBroker(),
+                    competingSpec.getPowerType());
 			loweredSpec.withEarlyWithdrawPayment(0);
 			return loweredSpec;
 		}
@@ -106,6 +117,19 @@ public class TariffManager {
 		//TODO: Heuristic to lower tariff
 		TariffSpecification lowerTariff = new TariffSpecification(this.brokerContext.getBroker(),
                 tariff.getPowerType());
+		lowerRates(tariff, decrease, lowerTariff);
+		return lowerTariff;
+	}
+	
+	private TariffSpecification lowerTariff(TariffSpecification tariff, double decrease, Broker broker, PowerType powerType ) {
+		//TODO: Heuristic to lower tariff
+		TariffSpecification lowerTariff = new TariffSpecification(broker,
+				powerType);
+		lowerRates(tariff, decrease, lowerTariff);
+		return lowerTariff;
+	}
+
+	private void lowerRates(TariffSpecification tariff, double decrease, TariffSpecification lowerTariff) {
 		List<Rate> rates = tariff.getRates();
 		for (Rate rate : rates) {
 			Rate lowerRate = new Rate();
@@ -120,17 +144,23 @@ public class TariffManager {
 			}
 			lowerTariff.addRate(rate);
 		}
-		return lowerTariff;
 	}
+	
 	
 	private void addNewTariff(TariffSpecification spec) {
-	      this.tariffRepo.addSpecification(spec);
-	      this.brokerContext.sendMessage(spec);
+		System.out.print("ADDING TARIFF: " + this.tariffRepo.findAllTariffs().size() + "->");
+	    this.tariffRepo.addSpecification(spec);
+		System.out.println(this.tariffRepo.findAllTariffs().size());
+	    this.brokerContext.sendMessage(spec);
 	}
 	
-	private void supersedeTariff(TariffSpecification spec, long oldTariffId) {
-		spec.addSupersedes(oldTariffId);
+	private void supersedeTariff(TariffSpecification spec, TariffSpecification oldSpec) {
+		spec.addSupersedes(oldSpec.getId());
 		addNewTariff(spec);
+		// revoke the old one
+        TariffRevoke revoke =
+          new TariffRevoke(brokerContext.getBroker(), oldSpec);
+        brokerContext.sendMessage(revoke);
 	}
 	
 }
