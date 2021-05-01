@@ -399,12 +399,25 @@ implements PortfolioManager, Initializable, Activatable
   @Override // from Activatable
   public synchronized void activate (int timeslotIndex)
   {
+	System.out.println("Customers = " + customerSubscriptions.toString());
+	System.out.println("");
     if (customerSubscriptions.size() == 0) {
     	this.tariffManager.createInitialTariffs(this.competingTariffs);
       //add new tariffs
     }
     else {
       // we have some, are they good enough?
+    	/*
+    	for (TariffSpecification tariffSpec : customerSubscriptions.keySet()) {
+    		if(tariffSpec != null || customerSubscriptions.get(tariffSpec) != null) {
+    			System.out.println("Tariff: " + tariffSpec.getPowerType().toString());
+    			System.out.println("  Subscribers: " + customerSubscriptions.get(tariffSpec).toString());
+    		}
+    		else {
+    			System.out.println("wierd tariff");
+    		}
+    	}
+    	*/
     	this.tariffManager.improveTariffs(timeslotIndex, this.competingTariffs);
       //iterate through newTariffs and supersede old ones;
     }
