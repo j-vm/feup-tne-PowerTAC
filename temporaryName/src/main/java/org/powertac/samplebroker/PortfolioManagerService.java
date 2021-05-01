@@ -401,7 +401,7 @@ implements PortfolioManager, Initializable, Activatable
   {
 	System.out.println("Customers = " + customerSubscriptions.toString());
 	System.out.println("");
-    if (customerSubscriptions.size() == 0) {
+    if (this.tariffRepo.findTariffsByBroker(this.brokerContext.getBroker()).size() == 0) {
     	this.tariffManager.createInitialTariffs(this.competingTariffs);
       //add new tariffs
     }

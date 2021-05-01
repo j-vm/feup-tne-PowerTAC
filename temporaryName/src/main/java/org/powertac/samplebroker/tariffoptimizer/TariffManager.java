@@ -143,13 +143,13 @@ public class TariffManager {
 				//lower fixed rates (get params from rate and add to lowerRate) 
 				lowerRate.withValue(rate.getValue() * 1 - decrease);
 				if(this.DEBUG) System.out.println("Fixed Rate from: " + rate.getValue() + " to: " + lowerRate.getValue());
-				copyPeriods(rate, lowerRate);
+				//copyPeriods(rate, lowerRate);
 				
 			}
 			else {
-				lowerRate.withValue(rate.getExpectedMean());
+				lowerRate.withValue(rate.getExpectedMean() * 1 - decrease);
 				if(this.DEBUG) System.out.println("Variable Rate from: " + rate.getExpectedMean() + " to: " + lowerRate.getValue());
-				copyPeriods(rate, lowerRate);
+				//copyPeriods(rate, lowerRate);
 			}
 			lowerTariff.addRate(rate);
 		}
@@ -169,12 +169,12 @@ public class TariffManager {
 	
 	private void addNewTariff(TariffSpecification spec) {
 		if(this.DEBUG) System.out.print("ADDING TARIFF: " + spec.toString() + "  " + 
-	this.tariffRepo.findTariffsByBroker(this.brokerContext.getBroker()).size() + "->");
+					this.tariffRepo.findTariffsByBroker(this.brokerContext.getBroker()).size() + "->");
 		Tariff newTariff = new Tariff(spec);
 		newTariff.init();
-	    this.tariffRepo.addTariff(new Tariff(spec));
+	    this.tariffRepo.addTariff(newTariff);
 		if(this.DEBUG) System.out.println(this.tariffRepo.findTariffsByBroker(this.brokerContext.getBroker()).size());
-	    this.brokerContext.sendMessage(spec);
+	    this.brokerContext.sendMessage(newTariff);
 	}
 	
 	private void supersedeTariff(TariffSpecification spec, TariffSpecification oldSpec) {
