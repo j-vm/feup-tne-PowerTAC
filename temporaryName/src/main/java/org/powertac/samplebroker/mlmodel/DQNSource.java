@@ -18,7 +18,7 @@ import org.nd4j.linalg.learning.config.RmsProp;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 
-public class DeepQPredict{
+public class DQNSource implements TargetQNetworkSource{
 	
 	
 	private int[] shape = {2, 3, 4};
@@ -32,8 +32,9 @@ public class DeepQPredict{
 	
 	private MultiLayerNetwork predictMLN = new MultiLayerNetwork(this.multiLayerConf);
 	private DQN predictor = new DQN<>(this.predictMLN);
-	
-	
+	private MultiLayerNetwork targetMLN = new MultiLayerNetwork(this.multiLayerConf);
+	private DQN target = new DQN<>(this.targetMLN);
+
 	
 	public void createModel() {
 		
@@ -57,5 +58,15 @@ public class DeepQPredict{
 
 	public void saveModel() {
 		
+	}
+
+	@Override
+	public IDQN getQNetwork() {
+		return (IDQN)this.predictor;
+	}
+
+	@Override
+	public IDQN getTargetQNetwork() {
+		return (IDQN)this.target;
 	}
 }
