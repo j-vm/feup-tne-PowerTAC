@@ -20,7 +20,11 @@ public class PyComs {
     public static HashMap<Integer, ArrayList<JSONObject>> orderbookJson = new HashMap<>();
     public static HashMap<Integer, JSONObject> weatherForecastJson = new HashMap<>();
     public static HashMap<Integer, JSONObject> weatherJson = new HashMap<>();
-    public static int lastIndexCleared, mapLastIndexCleared, lastIndexOrderBook, mapLastIndexOrderBook = 0;
+    public static int lastIndexCleared,  lastIndexOrderBook = 0;
+    public static int mapLastIndexCleared = 360;
+    public static int mapLastIndexOrderBook = 360;
+    public static int numberOfCompetitors;
+    public static int numberOfCustomers;
 
     public static Map<String, String> jsonType = Map.ofEntries(
         entry("energyReportType", "energyReportType"),
@@ -29,11 +33,59 @@ public class PyComs {
         entry("orderbookJsonType", "orderbookJsonType"),
         entry("weatherForecastJsonType", "weatherForecastJsonType"),
         entry("weatherJsonType", "weatherJsonType")
-    ); 
+    );
 
-    // Agora nós queremos agrupar os dados em base.
-    // Sempre que passar à base seguinte, considera-se que todas as mensagens não recebidas
-    // não chegarão.
+    public static void trySend(Integer timeslot){
+        var listOfMaps = new ArrayList<HashMap<Integer, JSONObject>>();
+        listOfMaps.add(energyReportMap);
+        listOfMaps.add(weatherForecastJson);
+        listOfMaps.add(weatherJson);
+
+        var listOfMaps2 = new ArrayList<HashMap<Integer, ArrayList<JSONObject>>>();
+        listOfMaps2.add(clearedTradeJson);
+        listOfMaps2.add(orderbookJson);
+
+        var shouldSend = true;
+
+        for (HashMap<Integer,JSONObject> hashMap : listOfMaps) {
+            System.out.println("map");
+            if(hashMap.get(timeslot) == null){
+                System.out.println("Failed");
+                shouldSend = false;
+                break;
+            }
+        }
+        
+        for (HashMap<Integer,ArrayList<JSONObject>> hashMap : listOfMaps2) {
+            System.out.println("map2");
+            if(hashMap.get(timeslot) == null){
+                System.out.println("Failed2");
+                System.out.println(hashMap.toString());
+                shouldSend = false;
+                break;
+            }
+        }
+
+        if(shouldSend){
+            var toSend = new JSONObject();
+            var value = new ArrayList<JSONObject>();
+            var value2 = new ArrayList<ArrayList<JSONObject>>();
+
+            for (HashMap<Integer, JSONObject> map : listOfMaps)
+                value.add(map.get(timeslot));
+
+            for (HashMap<Integer, ArrayList<JSONObject>> map : listOfMaps2)
+                value2.add(map.get(timeslot));
+
+            toSend.put("SampleType", "Training");
+            toSend.put("noCompetitors", numberOfCompetitors);
+            toSend.put("noCustomers", numberOfCustomers);
+            toSend.put("SingleObjects", value);
+            toSend.put("ListObjects", value2);
+
+            System.out.println(toSend);
+        }
+    }
 
     public JSONObject createMockClearedTrade(int slotInDay){
         var clearedTrade = new HashMap<String, Object>();
@@ -57,13 +109,33 @@ public class PyComs {
 
     public void trigger(JSONObject obj, String type){
         String currSlot = obj.get("timeslotIndex").toString(); 
-    
+        
         switch(type){
             case "energyReportType":
+                System.out.println(mapLastIndexCleared);
+                System.out.println(mapLastIndexOrderBook);
+                System.out.println(String.format("energyReport - %s", currSlot));
                 energyReportMap.put(Integer.parseInt(currSlot), obj);
+                //Fills missing values if trades on 0 slot did not happen
+                if(lastIndexCleared == 23) {
+                    ArrayList<JSONObject> clearedTrades;
+                    clearedTrades =  clearedTradeJson.get(mapLastIndexCleared); 
+                    clearedTrades.add(createMockClearedTrade(0)); //0 is the last index
+                    lastIndexCleared = 0;
+                }
+                if(lastIndexOrderBook == 23) {
+                    ArrayList<JSONObject> orderBooks;                                   
+                    orderBooks =  orderbookJson.get(mapLastIndexOrderBook); 
+                    orderBooks.add(createMockOrderbook(0)); //0 is the last index
+                    lastIndexOrderBook = 0;
+                }
+                trySend(Integer.parseInt(currSlot));
                 break;
             case "competitionJsonType":
+                // System.out.println(String.format("competitionJson - %s", currSlot));
                 competitionJson.put(Integer.parseInt(currSlot), obj);
+                numberOfCompetitors = (Integer) obj.get("noCompetitors");
+                numberOfCustomers = (Integer) obj.get("noCustomer");
                 break;
             case "clearedTradeJsonType":
                 int slotInDay = Integer.parseInt(obj.get("slotInDay").toString()); 
@@ -75,12 +147,7 @@ public class PyComs {
                 } else {
                     //Fills missing values
                     ArrayList<JSONObject> clearedTrades;
-                    //slotInDay missing is 0
-                    if(slotInDay == 1 && lastIndexCleared == 23) {
-                        clearedTrades =  clearedTradeJson.get(mapLastIndexCleared); 
-                        clearedTrades.add(createMockClearedTrade(0)); //0 is the last index
-                        lastIndexCleared = 0;
-                    }
+                    //when slotInDay missing is 0, it is fix in energyReportType case
                     if(slotInDay == 0 && lastIndexCleared == 22) {
                         clearedTrades =  clearedTradeJson.get(mapLastIndexCleared); 
                         clearedTrades.add(createMockClearedTrade(23));
@@ -100,6 +167,7 @@ public class PyComs {
                     }  
                     clearedTrades.add(obj);
                     clearedTradeJson.put(mapLastIndexCleared, clearedTrades);  
+                    System.out.println("clearedTradeJson" +  mapLastIndexCleared + "         slot:" + slotInDay);
                     lastIndexCleared = slotInDay;
                 }
                 break;
@@ -113,12 +181,7 @@ public class PyComs {
                 } else {
                     //Fills missing values
                     ArrayList<JSONObject> orderBooks;
-                    //slotInDay missing is 0
-                    if(slotInDayOrder == 1 && lastIndexOrderBook == 23) {
-                        orderBooks =  orderbookJson.get(mapLastIndexOrderBook); 
-                        orderBooks.add(createMockOrderbook(0)); //0 is the last index
-                        lastIndexOrderBook = 0;
-                    }
+                    //when slotInDay missing is 0, it is fix in energyReportType case
                     if(slotInDayOrder == 0 && lastIndexOrderBook == 22) {
                         orderBooks =  orderbookJson.get(mapLastIndexOrderBook); 
                         orderBooks.add(createMockOrderbook(23));
@@ -138,17 +201,18 @@ public class PyComs {
                     }  
                     orderBooks.add(obj);
                     orderbookJson.put(mapLastIndexOrderBook, orderBooks);  
+                    System.out.println("orderbookJson" +  mapLastIndexOrderBook + "   Slot:" + slotInDayOrder);
                     lastIndexOrderBook = slotInDayOrder;
                 }
                 break;
             case "weatherForecastJsonType":
+                // System.out.println(String.format("weatherForecastJson - %s", currSlot));
                 weatherForecastJson.put(Integer.parseInt(currSlot), obj);
                 break;
             case "weatherJsonType":
+                // System.out.println(String.format("weatherJson - %s", currSlot));
                 weatherJson.put(Integer.parseInt(currSlot), obj);
                 break;
         }
-
-        // Check if we have to send the request now.
     }
 }
