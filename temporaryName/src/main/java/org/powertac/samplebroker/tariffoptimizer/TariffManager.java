@@ -66,7 +66,12 @@ public class TariffManager {
 			var myTariffs = List.copyOf(tariffRepo.findTariffsByBroker(this.brokerContext.getBroker()));
 			if(this.DEBUG) System.out.println("MyTariffs: " + myTariffs.toString());
 			for (Tariff tariff : myTariffs) {
-				if(this.DEBUG) System.out.println("tariff is active?" + tariff.isActive());
+				System.out.println("tarif broker: " + tariff.getBroker());
+				System.out.println("tarif state: " + tariff.getState());
+				System.out.println("tariff expired: " + tariff.isExpired());
+				System.out.println("tarif is subscribable: " + tariff.isSubscribable());
+				System.out.println("tarif is expired: " + tariff.isExpired());
+				if(this.DEBUG) System.out.println("tariff is active? " + tariff.isActive());
 				if(tariff.getIsSupersededBy() == null) {
 
 					TariffSpecification newTariffSpec = lowerTariff(tariff.getTariffSpec(), this.PERIODIC_DECREASE); //SUBSTITUIR LOWER TARIFF COM MODELO AI
@@ -75,7 +80,37 @@ public class TariffManager {
 					
 					supersedeTariff(newTariffSpec, tariff.getTariffSpec());
 				}
+			//************************************testing************************************************ */
+			//"mytariffs" from line 66 arent the same that entered the function, wich ones should we use???
+			for(List<TariffSpecification> lists : competingTariffs.values()){
+				System.out.println("--------------------------------------------\n");
+				for(TariffSpecification tarif : lists){
+					TariffSpecification newTariff = tarif;
+					
+					System.out.println("competing tariffs: " + tarif.toString());
+					System.out.println("broker: " + tarif.getBroker());
+					System.out.println("is valid: " + tarif.isValid());
+					List<Rate> rates = tarif.getRates();
+					for (Rate rate : rates){
+						rate.withValue(-0.8);
+						rate.withWeeklyBegin(1);
+						rate.withWeeklyEnd(7);
+						System.out.println("rates: " + rate.toString());
+						newTariff.addRate(rate);
+					}
+					newTariff.addSupersedes(tarif.getId());
+				}
+				System.out.println("--------------------------------------------\n");
 			}
+			//**************************testoing**************************************** */
+		}
+		//iterar por tariffRepo
+		//chamar o modelo
+		//alterar tarifas
+		//enviar tarifas alteradas
+		if(this.DEBUG) {
+			System.out.flush();
+		}
 		}
 		//iterar por tariffRepo
 		//chamar o modelo
