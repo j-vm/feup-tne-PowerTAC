@@ -22,16 +22,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.Instant;
 import org.powertac.common.Broker;
 import org.powertac.common.Competition;
 import org.powertac.common.CustomerInfo;
 import org.powertac.common.Rate;
 import org.powertac.common.RegulationRate;
-import org.powertac.common.RegulationRate.ResponseTime;
-import org.powertac.common.Tariff;
 import org.powertac.common.TariffSpecification;
 import org.powertac.common.TariffTransaction;
 import org.powertac.common.TimeService;
@@ -52,11 +50,9 @@ import org.powertac.samplebroker.interfaces.BrokerContext;
 import org.powertac.samplebroker.interfaces.Initializable;
 import org.powertac.samplebroker.interfaces.MarketManager;
 import org.powertac.samplebroker.interfaces.PortfolioManager;
+import org.powertac.samplebroker.tariffoptimizer.TariffManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import org.powertac.samplebroker.tariffoptimizer.InputManager;
-import org.powertac.samplebroker.tariffoptimizer.TariffManager;
 
 /**
  * Handles portfolio-management responsibilities for the broker. This
@@ -397,30 +393,66 @@ implements PortfolioManager, Initializable, Activatable
    * among modules is non-deterministic.
    */
   @Override // from Activatable
+  
+  
+  
+  
   public synchronized void activate (int timeslotIndex)
   {
-	System.out.println("Customers = " + customerSubscriptions.toString());
-	System.out.println("");
-    if (this.tariffRepo.findTariffsByBroker(this.brokerContext.getBroker()).size() == 0) {
-    	this.tariffManager.createInitialTariffs(this.competingTariffs);
-      //add new tariffs
-    }
-    else {
-      // we have some, are they good enough?
-    	/*
-    	for (TariffSpecification tariffSpec : customerSubscriptions.keySet()) {
-    		if(tariffSpec != null || customerSubscriptions.get(tariffSpec) != null) {
-    			System.out.println("Tariff: " + tariffSpec.getPowerType().toString());
-    			System.out.println("  Subscribers: " + customerSubscriptions.get(tariffSpec).toString());
-    		}
-    		else {
-    			System.out.println("wierd tariff");
-    		}
-    	}
-    	*/
-    	this.tariffManager.improveTariffs(timeslotIndex, this.competingTariffs);
-      //iterate through newTariffs and supersede old ones;
-    }
+
+	for (TariffSpecification tariffSpec : customerSubscriptions.keySet()) {
+		if(tariffSpec != null || customerSubscriptions.get(tariffSpec) != null) {
+			System.out.println("Tariff: " + tariffSpec.getPowerType().toString());
+			System.out.println("  Subscribers: " + customerSubscriptions.get(tariffSpec).toString());
+		}
+		else {
+			System.out.println("wierd tariff ");
+		}
+		System.out.println("Collect Usage: " + this.collectUsage(timeslotIndex));
+	}
+	
+	
+
+	List<TariffSpecification> newTariffs = this.tariffManager.createNewTariffs(this.competingTariffs);
+	for (TariffSpecification spec : newTariffs) {
+		System.out.println("[PMS] Adding tariff");
+		System.out.println(spec.toString());
+    	customerSubscriptions.put(spec, new LinkedHashMap<>());
+    	tariffRepo.addSpecification(spec);
+    	brokerContext.sendMessage(spec);
+	}
+	//add new tariffs
+	
+	if ((timeslotIndex - 1) % 6 == 0) {
+		List<TariffSpecification> candidates = tariffRepo
+				.findTariffSpecificationsByBroker(brokerContext.getBroker());
+		if (null == candidates || 0 == candidates.size())
+			System.out.println("[PMS] No tariffs found for broker");
+		else {
+			List<TariffSpecification> alteredTariffs = this.tariffManager.alterTariffs(timeslotIndex, candidates);
+			if (candidates.size() != alteredTariffs.size()) {
+				System.out.println("[PMS] ERROR: Candidate size != newTariff size (PortfolioManagerService 447)");
+			} else {
+				for (int i = 0; i < candidates.size(); i++) {
+					var spec = candidates.get(i);
+					if (alteredTariffs.get(i) != null) {
+						var oldc = candidates.get(i);
+						System.out.println("[PMS]Superseding tariff");
+						System.out.println(oldc.toString() + " => " + spec.toString());
+						spec.addSupersedes(oldc.getId());
+						tariffRepo.addSpecification(spec);
+						brokerContext.sendMessage(spec);
+						// revoke the old one
+						TariffRevoke revoke = new TariffRevoke(brokerContext.getBroker(), oldc);
+						brokerContext.sendMessage(revoke);
+					}
+				}
+			}
+		}     	
+		//iterate through tariffs and supersede old ones;
+	
+	}
+	
     for (CustomerRecord record: notifyOnActivation)
       record.activate();
   }

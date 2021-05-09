@@ -1,5 +1,6 @@
 package org.powertac.samplebroker.tariffoptimizer;
 import org.powertac.common.Broker;
+import org.powertac.common.CustomerInfo;
 import org.powertac.common.Rate;
 import org.powertac.common.Tariff;
 import org.powertac.common.TariffSpecification;
@@ -10,12 +11,15 @@ import org.powertac.samplebroker.interfaces.BrokerContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public class TariffManager {
-	boolean DEBUG = true;
+	boolean DEBUG = false;
 	double INITIAL_DECREASE = 0.2;
 	double PERIODIC_DECREASE = 0.05;
 	
@@ -28,24 +32,30 @@ public class TariffManager {
 	private Map<PowerType, List<TariffSpecification>> competingTariffs;
 	private TariffRepo tariffRepo;
 	private BrokerContext brokerContext;
+	private Set<PowerType> powerTypes = new HashSet<>();
 	
-	public void createInitialTariffs(Map<PowerType, List<TariffSpecification>> competingTariffs) {
+	public List<TariffSpecification> createNewTariffs(Map<PowerType, List<TariffSpecification>> competingTariffs) {
 		// TODO Auto-generated method stub	
-		Map<PowerType, TariffSpecification> initialTariffs = new HashMap<PowerType, TariffSpecification>();
+		List<TariffSpecification> initialTariffs = new ArrayList<TariffSpecification>();
 		this.competingTariffs = competingTariffs;
 		for (Map.Entry<PowerType, List<TariffSpecification>> entry : competingTariffs.entrySet()) {
-			if(this.DEBUG) System.out.println("Creating new Tariff: ");
-			TariffSpecification newTariff= initialTariffMutator(entry.getValue());
-			if(newTariff != null)
-				initialTariffs.put(entry.getKey(), newTariff);
+			if (!this.powerTypes.contains(entry.getKey())) {
+				if (this.DEBUG)
+					System.out.println("Creating new Tariff: ");
+				TariffSpecification newTariff = initialTariffMutator(entry.getValue());
+				if (newTariff != null) {
+					initialTariffs.add(newTariff);
+					this.powerTypes.add(newTariff.getPowerType());
+				} 
+			}
 		}
-		for (Map.Entry<PowerType, TariffSpecification> initialTariff : initialTariffs.entrySet()) {
-			addNewTariff(initialTariff.getValue());
-			if(this.DEBUG) System.out.println(initialTariff.toString());
-		}
+		return initialTariffs;
 	}
 
-	public void improveTariffs(int timeslotIndex, Map<PowerType, List<TariffSpecification>> competingTariffs) {
+	public List<TariffSpecification> alterTariffs(int timeslotIndex, List<TariffSpecification> specs) {
+		
+		
+		List<TariffSpecification> newTariffSpecs = new ArrayList<TariffSpecification>();
 		
 		if((timeslotIndex - 1) % 6 == 0) {
 			
@@ -53,35 +63,42 @@ public class TariffManager {
 			if(this.DEBUG) System.out.println("");
 			if(this.DEBUG) System.out.println("Revision Period - Time: " + timeslotIndex);
 			if(this.DEBUG) System.out.println("________________________________________________");
-			if(this.DEBUG) System.out.println("Competing tariffs:");
+			if(this.DEBUG) System.out.println("My tariffs:");
 			if(this.DEBUG) System.out.println("");
 			
-			for (Map.Entry<PowerType, List<TariffSpecification>> entry : competingTariffs.entrySet())
-				printTariffSpecificationList(entry.getKey(), entry.getValue());
-	
-			if(this.DEBUG) System.out.println("");
-			if(this.DEBUG) System.out.println("TNA Tariff update:");
-			if(this.DEBUG) System.out.println("");
-			
-			var myTariffs = List.copyOf(tariffRepo.findTariffsByBroker(this.brokerContext.getBroker()));
-			if(this.DEBUG) System.out.println("MyTariffs: " + myTariffs.toString());
-			for (Tariff tariff : myTariffs) {
-				System.out.println("tarif broker: " + tariff.getBroker());
-				System.out.println("tarif state: " + tariff.getState());
-				System.out.println("tariff expired: " + tariff.isExpired());
-				System.out.println("tarif is subscribable: " + tariff.isSubscribable());
-				System.out.println("tarif is expired: " + tariff.isExpired());
-				if(this.DEBUG) System.out.println("tariff is active? " + tariff.isActive());
-				if(tariff.getIsSupersededBy() == null) {
-
-					TariffSpecification newTariffSpec = lowerTariff(tariff.getTariffSpec(), this.PERIODIC_DECREASE); //SUBSTITUIR LOWER TARIFF COM MODELO AI
-					if(this.DEBUG) System.out.println(tariff.toString() + "  ->  " + newTariffSpec.toString());
-					if(this.DEBUG) System.out.println("");
-					
-					supersedeTariff(newTariffSpec, tariff.getTariffSpec());
-				}
+			for(TariffSpecification spec : specs) {
+				
+				var newSpec = this.lowerTariff(spec, PERIODIC_DECREASE);
+				newTariffSpecs.add(newSpec);
+				
+			}
+//			for (Map.Entry<PowerType, List<TariffSpecification>> entry : competingTariffs.entrySet())
+//				printTariffSpecificationList(entry.getKey(), entry.getValue());
+//	
+//			if(this.DEBUG) System.out.println("");
+//			if(this.DEBUG) System.out.println("TNA Tariff update:");
+//			if(this.DEBUG) System.out.println("");
+//			
+//			var myTariffs = List.copyOf(tariffRepo.findTariffsByBroker(this.brokerContext.getBroker()));
+//			if(this.DEBUG) System.out.println("MyTariffs: " + myTariffs.toString());
+//			for (Tariff tariff : myTariffs) {
+//				System.out.println("tarif broker: " + tariff.getBroker());
+//				System.out.println("tarif state: " + tariff.getState());
+//				System.out.println("tariff expired: " + tariff.isExpired());
+//				System.out.println("tarif is subscribable: " + tariff.isSubscribable());
+//				System.out.println("tarif is expired: " + tariff.isExpired());
+//				if(this.DEBUG) System.out.println("tariff is active? " + tariff.isActive());
+//				if(tariff.getIsSupersededBy() == null) {
+//
+//					TariffSpecification newTariffSpec = lowerTariff(tariff.getTariffSpec(), this.PERIODIC_DECREASE); //SUBSTITUIR LOWER TARIFF COM MODELO AI
+//					if(this.DEBUG) System.out.println(tariff.toString() + "  ->  " + newTariffSpec.toString());
+//					if(this.DEBUG) System.out.println("");
+//					
+//					supersedeTariff(newTariffSpec, tariff.getTariffSpec());
+//				}
 			//************************************testing************************************************ */
 			//"mytariffs" from line 66 arent the same that entered the function, wich ones should we use???
+				/*
 			for(List<TariffSpecification> lists : competingTariffs.values()){
 				System.out.println("--------------------------------------------\n");
 				for(TariffSpecification tarif : lists){
@@ -102,6 +119,7 @@ public class TariffManager {
 				}
 				System.out.println("--------------------------------------------\n");
 			}
+			*/
 			//**************************testoing**************************************** */
 		}
 		//iterar por tariffRepo
@@ -111,12 +129,13 @@ public class TariffManager {
 		if(this.DEBUG) {
 			System.out.flush();
 		}
-		}
+		 
 		//iterar por tariffRepo
 		//chamar o modelo
 		//alterar tarifas
 		//enviar tarifas alteradas
 		if(this.DEBUG) System.out.flush();
+		return newTariffSpecs;
 	}
 	
 
@@ -134,8 +153,7 @@ public class TariffManager {
 		if(list.get(0) != null) {
 			if(this.DEBUG) System.out.println("Mutating tariff: " + list.get(0).toString());
 			TariffSpecification competingSpec = list.get(0);
-			TariffSpecification loweredSpec = lowerTariff(competingSpec, INITIAL_DECREASE, this.brokerContext.getBroker(),
-                    competingSpec.getPowerType());
+			TariffSpecification loweredSpec = lowerTariff(competingSpec, INITIAL_DECREASE);
 			loweredSpec.withEarlyWithdrawPayment(0);
 			if(this.DEBUG) System.out.println("Signup Payment:" + loweredSpec.getSignupPayment());
 			loweredSpec.withSignupPayment(competingSpec.getSignupPayment());
