@@ -1,5 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPStatus, ThreadingHTTPServer
-from ssl import wrap_socket, PROTOCOL_TLS
+import json
 
 
 class OurBaseHandler(BaseHTTPRequestHandler):
@@ -31,10 +31,6 @@ def serve_endpoint(address, port):
     server_address = (address, port)
 
     server = ThreadingHTTPServer(server_address, OurBaseHandler)
-    server.socket = wrap_socket(server.socket,
-                                server_side=True,
-                                certfile='server.pem',
-                                ssl_version=PROTOCOL_TLS)
 
     server.serve_forever()
 
