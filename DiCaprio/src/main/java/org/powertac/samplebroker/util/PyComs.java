@@ -7,7 +7,17 @@ import java.util.HashMap;
 import java.util.Map;
 import static java.util.Map.entry;
 
-import java.util.ArrayList;    
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.net.URI;
+import java.net.http.HttpClient;
 
 @Service("pyComs")
 public class PyComs {
@@ -48,7 +58,6 @@ public class PyComs {
         var shouldSend = true;
 
         for (HashMap<Integer,JSONObject> hashMap : listOfMaps) {
-            System.out.println("map");
             if(hashMap.get(timeslot) == null){
                 System.out.println("Failed");
                 shouldSend = false;
@@ -57,7 +66,6 @@ public class PyComs {
         }
         
         for (HashMap<Integer,ArrayList<JSONObject>> hashMap : listOfMaps2) {
-            System.out.println("map2");
             if(hashMap.get(timeslot) == null){
                 System.out.println("Failed2");
                 System.out.println(hashMap.toString());
@@ -83,7 +91,38 @@ public class PyComs {
             toSend.put("SingleObjects", value);
             toSend.put("ListObjects", value2);
 
-            System.out.println(toSend);
+            var client = HttpClient.newHttpClient();
+        
+            File myObj = new File("file.json");
+
+            try {
+                if (! myObj.createNewFile()){
+                    myObj.delete();
+                    myObj.createNewFile();
+                }
+                
+                FileWriter writer = new FileWriter("file.json");
+                writer.write(toSend.toString());
+                writer.close();
+
+                var request = HttpRequest.newBuilder(
+                    URI.create("http://localhost:4443"))
+                    .header("Content-Type", "application/json")
+                    .POST(BodyPublishers.ofFile(Paths.get("file.json")))
+                .build();
+                
+                try {
+                    HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+                    System.out.println(response.body());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            finally {
+                myObj.delete();
+            }
         }
     }
 

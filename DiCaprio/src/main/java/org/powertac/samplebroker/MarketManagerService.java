@@ -174,7 +174,6 @@ implements MarketManager, Initializable, Activatable
       clearedTrade.put("timeslotIndex", ct.getTimeslotIndex());
       clearedTrade.put("executionMWh", ct.getExecutionMWh());
       clearedTrade.put("executionPrice", ct.getExecutionPrice());
-      clearedTrade.put("dateExecuted", ct.getDateExecuted());
       clearedTrade.put("slotInDay", ct.getTimeslot().slotInDay());
       
       JSONObject clearedTradeJson =  new JSONObject(clearedTrade);
