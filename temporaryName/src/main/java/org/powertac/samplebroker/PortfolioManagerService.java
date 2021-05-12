@@ -30,6 +30,7 @@ import org.powertac.common.Competition;
 import org.powertac.common.CustomerInfo;
 import org.powertac.common.Rate;
 import org.powertac.common.RegulationRate;
+import org.powertac.common.Tariff;
 import org.powertac.common.TariffSpecification;
 import org.powertac.common.TariffTransaction;
 import org.powertac.common.TimeService;
@@ -53,6 +54,8 @@ import org.powertac.samplebroker.interfaces.PortfolioManager;
 import org.powertac.samplebroker.tariffoptimizer.TariffManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import org.apache.commons.math3.util.Pair;
 
 /**
  * Handles portfolio-management responsibilities for the broker. This
@@ -82,7 +85,7 @@ implements PortfolioManager, Initializable, Activatable
   private TimeslotRepo timeslotRepo;
 
   @Autowired
-  private TariffRepo tariffRepo;
+  private TariffRepo tariffRepo;	
 
   @Autowired
   private CustomerRepo customerRepo;
@@ -171,6 +174,8 @@ implements PortfolioManager, Initializable, Activatable
       record = new CustomerRecord(customer);
       customerMap.put(customer, record);
     }
+    
+    
     return record;
   }
   
@@ -399,19 +404,23 @@ implements PortfolioManager, Initializable, Activatable
   
   public synchronized void activate (int timeslotIndex)
   {
-
-	for (TariffSpecification tariffSpec : customerSubscriptions.keySet()) {
-		if(tariffSpec != null || customerSubscriptions.get(tariffSpec) != null) {
-			System.out.println("Tariff: " + tariffSpec.getPowerType().toString());
-			System.out.println("  Subscribers: " + customerSubscriptions.get(tariffSpec).toString());
+	if(timeslotIndex % 6 == 0)
+		for (TariffSpecification tariffSpec : customerSubscriptions.keySet()) {
+			if(tariffSpec != null || customerSubscriptions.get(tariffSpec) != null) {
+				System.out.println("Tariff: " + tariffSpec.getPowerType().toString());
+				System.out.println("  Subscribers: " + customerSubscriptions.get(tariffSpec).toString());
+			}
+			else {
+				System.out.println("wierd tariff ");
+			}
+			System.out.println("Collect Usage: " + this.collectUsage(timeslotIndex));
 		}
-		else {
-			System.out.println("wierd tariff ");
-		}
-		System.out.println("Collect Usage: " + this.collectUsage(timeslotIndex));
+	
+	if (customerSubscriptions.size() == 0) {
+	      // we (most likely) have no tariffs
+	      createInitialTariffs();
 	}
-	
-	
+	/*
 
 	List<TariffSpecification> newTariffs = this.tariffManager.createNewTariffs(this.competingTariffs);
 	for (TariffSpecification spec : newTariffs) {
@@ -422,30 +431,27 @@ implements PortfolioManager, Initializable, Activatable
     	brokerContext.sendMessage(spec);
 	}
 	//add new tariffs
-	
+	*/
 	if ((timeslotIndex - 1) % 6 == 0) {
 		List<TariffSpecification> candidates = tariffRepo
 				.findTariffSpecificationsByBroker(brokerContext.getBroker());
 		if (null == candidates || 0 == candidates.size())
 			System.out.println("[PMS] No tariffs found for broker");
 		else {
-			List<TariffSpecification> alteredTariffs = this.tariffManager.alterTariffs(timeslotIndex, candidates);
-			if (candidates.size() != alteredTariffs.size()) {
-				System.out.println("[PMS] ERROR: Candidate size != newTariff size (PortfolioManagerService 447)");
-			} else {
-				for (int i = 0; i < candidates.size(); i++) {
-					var spec = candidates.get(i);
-					if (alteredTariffs.get(i) != null) {
-						var oldc = candidates.get(i);
-						System.out.println("[PMS]Superseding tariff");
-						System.out.println(oldc.toString() + " => " + spec.toString());
-						spec.addSupersedes(oldc.getId());
-						tariffRepo.addSpecification(spec);
-						brokerContext.sendMessage(spec);
-						// revoke the old one
-						TariffRevoke revoke = new TariffRevoke(brokerContext.getBroker(), oldc);
-						brokerContext.sendMessage(revoke);
-					}
+			List<Pair<TariffSpecification, TariffSpecification>> alteredTariffs = this.tariffManager.alterTariffs(timeslotIndex, candidates);
+			
+			for (int i = 0; i < alteredTariffs.size(); i++) {
+				var spec = alteredTariffs.get(i).getSecond();
+				if (alteredTariffs.get(i) != null) {
+					var oldc = alteredTariffs.get(i).getFirst();
+					System.out.println("[PMS]Superseding tariff");
+					System.out.println(oldc.toString() + " => " + spec.toString());
+					spec.addSupersedes(oldc.getId());
+					tariffRepo.addSpecification(spec);
+					brokerContext.sendMessage(spec);
+					// revoke the old one
+					TariffRevoke revoke = new TariffRevoke(brokerContext.getBroker(), oldc);
+					brokerContext.sendMessage(revoke);
 				}
 			}
 		}     	

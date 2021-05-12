@@ -7,7 +7,9 @@ import org.powertac.common.TariffSpecification;
 import org.powertac.common.enumerations.PowerType;
 import org.powertac.common.msg.TariffRevoke;
 import org.powertac.common.repo.TariffRepo;
+import org.powertac.common.xml.TariffSpecificationConverter;
 import org.powertac.samplebroker.interfaces.BrokerContext;
+import org.apache.commons.math3.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +23,7 @@ import java.util.Set;
 public class TariffManager {
 	boolean DEBUG = false;
 	double INITIAL_DECREASE = 0.2;
-	double PERIODIC_DECREASE = 0.05;
+	double PERIODIC_DECREASE = -0.05;
 	
 	public TariffManager(TariffRepo tariffRepo, BrokerContext brokerContext) {
 		super();
@@ -52,10 +54,10 @@ public class TariffManager {
 		return initialTariffs;
 	}
 
-	public List<TariffSpecification> alterTariffs(int timeslotIndex, List<TariffSpecification> specs) {
+	public List<Pair<TariffSpecification, TariffSpecification>> alterTariffs(int timeslotIndex, List<TariffSpecification> specs) {
 		
 		
-		List<TariffSpecification> newTariffSpecs = new ArrayList<TariffSpecification>();
+		List<Pair<TariffSpecification, TariffSpecification>> newTariffSpecs = new ArrayList<Pair<TariffSpecification, TariffSpecification>>();
 		
 		if((timeslotIndex - 1) % 6 == 0) {
 			
@@ -67,9 +69,22 @@ public class TariffManager {
 			if(this.DEBUG) System.out.println("");
 			
 			for(TariffSpecification spec : specs) {
+				if(spec.getPowerType().isConsumption()) {
+					var newSpec = this.alterConsumptionTariff(spec, PERIODIC_DECREASE); //TODO: change periodic decrease by dqn
+					if(newSpec != null) newTariffSpecs.add(new Pair<>(spec, newSpec));
+					
+				}else if(spec.getPowerType().isProduction()) {
+					var newSpec = this.alterProductionTariff(spec, PERIODIC_DECREASE);
+					if(newSpec != null) newTariffSpecs.add(new Pair<>(spec, newSpec));
+					
+				}else if(spec.getPowerType().isStorage()) {
+					var newSpec = this.alterStorageTariff(spec, PERIODIC_DECREASE);
+					if(newSpec != null) newTariffSpecs.add(new Pair<>(spec, newSpec));
 				
-				var newSpec = this.lowerTariff(spec, PERIODIC_DECREASE);
-				newTariffSpecs.add(newSpec);
+				}else if(spec.getPowerType().isInterruptible()) {
+					var newSpec = this.alterInterruptableTariff(spec, PERIODIC_DECREASE);
+					if(newSpec != null) newTariffSpecs.add(new Pair<>(spec, newSpec));
+				}
 				
 			}
 //			for (Map.Entry<PowerType, List<TariffSpecification>> entry : competingTariffs.entrySet())
@@ -139,6 +154,23 @@ public class TariffManager {
 	}
 	
 
+	private TariffSpecification alterInterruptableTariff(TariffSpecification spec, double change) {
+		return this.alterTariff(spec, change);
+	}
+
+	private TariffSpecification alterStorageTariff(TariffSpecification spec, double change) {
+		
+		return null;
+	}
+
+	private TariffSpecification alterProductionTariff(TariffSpecification spec, double change) {
+		return this.alterTariff(spec, -change);
+	}
+
+	private TariffSpecification alterConsumptionTariff(TariffSpecification spec, double change) {
+		return this.alterTariff(spec, change);
+	}
+
 	private void printTariffSpecificationList(PowerType powerType, List<TariffSpecification> tariffs) {
 		if(this.DEBUG) System.out.println(powerType.toString());
 		for (TariffSpecification tariff : tariffs) {
@@ -153,7 +185,8 @@ public class TariffManager {
 		if(list.get(0) != null) {
 			if(this.DEBUG) System.out.println("Mutating tariff: " + list.get(0).toString());
 			TariffSpecification competingSpec = list.get(0);
-			TariffSpecification loweredSpec = lowerTariff(competingSpec, INITIAL_DECREASE);
+			
+			TariffSpecification loweredSpec = alterTariff(competingSpec, INITIAL_DECREASE);
 			loweredSpec.withEarlyWithdrawPayment(0);
 			if(this.DEBUG) System.out.println("Signup Payment:" + loweredSpec.getSignupPayment());
 			loweredSpec.withSignupPayment(competingSpec.getSignupPayment());
@@ -165,29 +198,24 @@ public class TariffManager {
 		}
 		return null;
 	}
-	
-	private TariffSpecification raiseTariff(TariffSpecification tariff) {
-		//TODO: Heuristic to raise tariff
-		return null;
-	}
 
 	
-	private TariffSpecification lowerTariff(TariffSpecification tariff, double decrease) {
-		//TODO: Heuristic to lower tariff
+	private TariffSpecification alterTariff(TariffSpecification tariff, double decrease) {
+
 		TariffSpecification lowerTariff = new TariffSpecification(this.brokerContext.getBroker(),
                 tariff.getPowerType());
-		lowerRates(tariff, decrease, lowerTariff);
+		alterRates(tariff, decrease, lowerTariff);
 		return lowerTariff;
 	}
 	
-	private TariffSpecification lowerTariff(TariffSpecification tariff, double decrease, Broker broker, PowerType powerType ) {
+	private TariffSpecification alterTariff(TariffSpecification tariff, double decrease, Broker broker, PowerType powerType ) {
 		TariffSpecification lowerTariff = new TariffSpecification(broker,
 				powerType);
-		lowerRates(tariff, decrease, lowerTariff);
+		alterRates(tariff, decrease, lowerTariff);
 		return lowerTariff;
 	}
 
-	private void lowerRates(TariffSpecification tariff, double decrease, TariffSpecification lowerTariff) {
+	private void alterRates(TariffSpecification tariff, double decrease, TariffSpecification lowerTariff) {
 		//TODO: Heuristic to lower rates. From variable tariff create more favourable fixed rate tariff
 		List<Rate> rates = tariff.getRates();
 		for (Rate rate : rates) {
