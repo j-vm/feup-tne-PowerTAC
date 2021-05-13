@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -404,20 +405,32 @@ implements PortfolioManager, Initializable, Activatable
   
   public synchronized void activate (int timeslotIndex)
   {
-	if(timeslotIndex % 6 == 0)
+	  
+	int trueSubscribers = 0;
+	for (CustomerRecord record: notifyOnActivation) {		
+		record.activate();
+		if(record.getCustomerInfo() != null && record.subscribedPopulation != 0)
+			trueSubscribers++;//System.out.println("record: " + record.getCustomerInfo() + " " + record.subscribedPopulation);
+	}
+	System.out.println("TRUE SUBSCRIBED POPULATION: " + trueSubscribers);
+	
+	
+	if(timeslotIndex % 6 == 0) {
 		for (TariffSpecification tariffSpec : customerSubscriptions.keySet()) {
-			if(tariffSpec != null || customerSubscriptions.get(tariffSpec) != null) {
-				System.out.println("Tariff: " + tariffSpec.getPowerType().toString());
-				System.out.println("  Subscribers: " + customerSubscriptions.get(tariffSpec).toString());
+			if(tariffSpec != null && customerSubscriptions.get(tariffSpec) != null) {
+				System.out.println("Tariff: " + tariffSpec.toString());
+				System.out.println("  Subscribers: " + (customerSubscriptions.get(tariffSpec).size()));
 			}
 			else {
 				System.out.println("wierd tariff ");
 			}
-			System.out.println("Collect Usage: " + this.collectUsage(timeslotIndex));
 		}
+	}
+
+	System.out.println("Collect Usage: " + this.collectUsage(timeslotIndex));
 	
 	if (customerSubscriptions.size() == 0) {
-	      // we (most likely) have no tariffs
+	      System.out.println("CREATING NEW TARIFFS");
 	      createInitialTariffs();
 	}
 	/*
@@ -432,25 +445,45 @@ implements PortfolioManager, Initializable, Activatable
 	}
 	//add new tariffs
 	*/
-	if ((timeslotIndex - 1) % 6 == 0) {
-		List<TariffSpecification> candidates = tariffRepo
-				.findTariffSpecificationsByBroker(brokerContext.getBroker());
+	
+	System.out.println("________________________________________________________________________");
+	if ((timeslotIndex + 1) % 6 == 0) {
+		List<Tariff> tariffs = tariffRepo
+				.findTariffsByBroker(brokerContext.getBroker());
+		List<TariffSpecification> candidates = new ArrayList<TariffSpecification>();
+		Map<TariffSpecification, Tariff> candidateTariffs = new HashMap<TariffSpecification, Tariff>();
+		for(Tariff tariff: tariffs) {
+				candidates.add(tariff.getTariffSpec());
+				candidateTariffs.put(tariff.getTariffSpec(),tariff);
+
+				System.out.println("Candidate: " + tariff.getId());
+		}
+		
 		if (null == candidates || 0 == candidates.size())
 			System.out.println("[PMS] No tariffs found for broker");
 		else {
 			List<Pair<TariffSpecification, TariffSpecification>> alteredTariffs = this.tariffManager.alterTariffs(timeslotIndex, candidates);
 			
+			System.out.println(alteredTariffs);
 			for (int i = 0; i < alteredTariffs.size(); i++) {
 				var spec = alteredTariffs.get(i).getSecond();
 				if (alteredTariffs.get(i) != null) {
 					var oldc = alteredTariffs.get(i).getFirst();
+					
+					//adding tariff
 					System.out.println("[PMS]Superseding tariff");
 					System.out.println(oldc.toString() + " => " + spec.toString());
 					spec.addSupersedes(oldc.getId());
-					tariffRepo.addSpecification(spec);
 					brokerContext.sendMessage(spec);
+					
+					tariffRepo.addTariff(new Tariff(spec));
+					//transfer customer records
+					customerSubscriptions.put(spec, new LinkedHashMap<>());
+
 					// revoke the old one
 					TariffRevoke revoke = new TariffRevoke(brokerContext.getBroker(), oldc);
+					this.tariffRepo.deleteTariff(candidateTariffs.get(oldc));
+					System.out.println("Deleted Tariff from repo: " + candidateTariffs.get(oldc));
 					brokerContext.sendMessage(revoke);
 				}
 			}
@@ -459,8 +492,6 @@ implements PortfolioManager, Initializable, Activatable
 	
 	}
 	
-    for (CustomerRecord record: notifyOnActivation)
-      record.activate();
   }
   
   // Creates initial tariffs for the main power types. These are simple
@@ -507,6 +538,7 @@ implements PortfolioManager, Initializable, Activatable
       spec.addRate(rate);
       customerSubscriptions.put(spec, new LinkedHashMap<>());
       tariffRepo.addSpecification(spec);
+      tariffRepo.addTariff(new Tariff(spec));
       brokerContext.sendMessage(spec);
     }
   }

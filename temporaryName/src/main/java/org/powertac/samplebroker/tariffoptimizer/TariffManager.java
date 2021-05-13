@@ -59,34 +59,34 @@ public class TariffManager {
 		
 		List<Pair<TariffSpecification, TariffSpecification>> newTariffSpecs = new ArrayList<Pair<TariffSpecification, TariffSpecification>>();
 		
-		if((timeslotIndex - 1) % 6 == 0) {
-			
-			if(this.DEBUG) System.out.println("");
-			if(this.DEBUG) System.out.println("");
-			if(this.DEBUG) System.out.println("Revision Period - Time: " + timeslotIndex);
-			if(this.DEBUG) System.out.println("________________________________________________");
-			if(this.DEBUG) System.out.println("My tariffs:");
-			if(this.DEBUG) System.out.println("");
-			
-			for(TariffSpecification spec : specs) {
-				if(spec.getPowerType().isConsumption()) {
-					var newSpec = this.alterConsumptionTariff(spec, PERIODIC_DECREASE); //TODO: change periodic decrease by dqn
-					if(newSpec != null) newTariffSpecs.add(new Pair<>(spec, newSpec));
-					
-				}else if(spec.getPowerType().isProduction()) {
-					var newSpec = this.alterProductionTariff(spec, PERIODIC_DECREASE);
-					if(newSpec != null) newTariffSpecs.add(new Pair<>(spec, newSpec));
-					
-				}else if(spec.getPowerType().isStorage()) {
-					var newSpec = this.alterStorageTariff(spec, PERIODIC_DECREASE);
-					if(newSpec != null) newTariffSpecs.add(new Pair<>(spec, newSpec));
+		
+		if(this.DEBUG) System.out.println("");
+		if(this.DEBUG) System.out.println("");
+		if(this.DEBUG) System.out.println("Revision Period - Time: " + timeslotIndex);
+		if(this.DEBUG) System.out.println("________________________________________________");
+		if(this.DEBUG) System.out.println("My tariffs:");
+		if(this.DEBUG) System.out.println("");
+		
+		for(TariffSpecification spec : specs) {
+			System.out.println("Updating spec: " + spec.getId());
+			if(spec.getPowerType().isConsumption()) {
+				var newSpec = this.alterConsumptionTariff(spec, PERIODIC_DECREASE); //TODO: change periodic decrease by dqn
+				if(newSpec != null) newTariffSpecs.add(new Pair<>(spec, newSpec));
 				
-				}else if(spec.getPowerType().isInterruptible()) {
-					var newSpec = this.alterInterruptableTariff(spec, PERIODIC_DECREASE);
-					if(newSpec != null) newTariffSpecs.add(new Pair<>(spec, newSpec));
-				}
+			}else if(spec.getPowerType().isProduction()) {
+				var newSpec = this.alterProductionTariff(spec, PERIODIC_DECREASE);
+				if(newSpec != null) newTariffSpecs.add(new Pair<>(spec, newSpec));
 				
+			}else if(spec.getPowerType().isStorage()) {
+				var newSpec = this.alterStorageTariff(spec, PERIODIC_DECREASE);
+				if(newSpec != null) newTariffSpecs.add(new Pair<>(spec, newSpec));
+			
+			}else if(spec.getPowerType().isInterruptible()) {
+				var newSpec = this.alterInterruptableTariff(spec, PERIODIC_DECREASE);
+				if(newSpec != null) newTariffSpecs.add(new Pair<>(spec, newSpec));
 			}
+			
+		}
 //			for (Map.Entry<PowerType, List<TariffSpecification>> entry : competingTariffs.entrySet())
 //				printTariffSpecificationList(entry.getKey(), entry.getValue());
 //	
@@ -111,32 +111,31 @@ public class TariffManager {
 //					
 //					supersedeTariff(newTariffSpec, tariff.getTariffSpec());
 //				}
-			//************************************testing************************************************ */
-			//"mytariffs" from line 66 arent the same that entered the function, wich ones should we use???
-				/*
-			for(List<TariffSpecification> lists : competingTariffs.values()){
-				System.out.println("--------------------------------------------\n");
-				for(TariffSpecification tarif : lists){
-					TariffSpecification newTariff = tarif;
-					
-					System.out.println("competing tariffs: " + tarif.toString());
-					System.out.println("broker: " + tarif.getBroker());
-					System.out.println("is valid: " + tarif.isValid());
-					List<Rate> rates = tarif.getRates();
-					for (Rate rate : rates){
-						rate.withValue(-0.8);
-						rate.withWeeklyBegin(1);
-						rate.withWeeklyEnd(7);
-						System.out.println("rates: " + rate.toString());
-						newTariff.addRate(rate);
-					}
-					newTariff.addSupersedes(tarif.getId());
+		//************************************testing************************************************ */
+		//"mytariffs" from line 66 arent the same that entered the function, wich ones should we use???
+			/*
+		for(List<TariffSpecification> lists : competingTariffs.values()){
+			System.out.println("--------------------------------------------\n");
+			for(TariffSpecification tarif : lists){
+				TariffSpecification newTariff = tarif;
+				
+				System.out.println("competing tariffs: " + tarif.toString());
+				System.out.println("broker: " + tarif.getBroker());
+				System.out.println("is valid: " + tarif.isValid());
+				List<Rate> rates = tarif.getRates();
+				for (Rate rate : rates){
+					rate.withValue(-0.8);
+					rate.withWeeklyBegin(1);
+					rate.withWeeklyEnd(7);
+					System.out.println("rates: " + rate.toString());
+					newTariff.addRate(rate);
 				}
-				System.out.println("--------------------------------------------\n");
+				newTariff.addSupersedes(tarif.getId());
 			}
-			*/
-			//**************************testoing**************************************** */
+			System.out.println("--------------------------------------------\n");
 		}
+		*/
+		//**************************testoing**************************************** */
 		//iterar por tariffRepo
 		//chamar o modelo
 		//alterar tarifas
@@ -150,6 +149,7 @@ public class TariffManager {
 		//alterar tarifas
 		//enviar tarifas alteradas
 		if(this.DEBUG) System.out.flush();
+		System.out.println("NEWTARIFFSPEC spec: " + newTariffSpecs);
 		return newTariffSpecs;
 	}
 	
@@ -159,7 +159,7 @@ public class TariffManager {
 	}
 
 	private TariffSpecification alterStorageTariff(TariffSpecification spec, double change) {
-		
+		//TODO: Add storage alteration heuristic here
 		return null;
 	}
 
