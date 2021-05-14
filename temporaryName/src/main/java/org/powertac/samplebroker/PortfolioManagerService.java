@@ -406,33 +406,28 @@ implements PortfolioManager, Initializable, Activatable
   public synchronized void activate (int timeslotIndex)
   {
 	  
-	int trueSubscribers = 0;
-	for (CustomerRecord record: notifyOnActivation) {		
-		record.activate();
-		if(record.getCustomerInfo() != null && record.subscribedPopulation != 0)
-			trueSubscribers++;//System.out.println("record: " + record.getCustomerInfo() + " " + record.subscribedPopulation);
-	}
-	System.out.println("TRUE SUBSCRIBED POPULATION: " + trueSubscribers);
-	
-	
-	if(timeslotIndex % 6 == 0) {
-		for (TariffSpecification tariffSpec : customerSubscriptions.keySet()) {
-			if(tariffSpec != null && customerSubscriptions.get(tariffSpec) != null) {
-				System.out.println("Tariff: " + tariffSpec.toString());
-				System.out.println("  Subscribers: " + (customerSubscriptions.get(tariffSpec).size()));
-			}
-			else {
-				System.out.println("wierd tariff ");
-			}
-		}
-	}
-
-	System.out.println("Collect Usage: " + this.collectUsage(timeslotIndex));
-	
-	if (customerSubscriptions.size() == 0) {
-	      System.out.println("CREATING NEW TARIFFS");
-	      createInitialTariffs();
-	}
+	  System.out.println("Collect Usage: " + this.collectUsage(timeslotIndex));
+	  
+	  this.getCustomerCounts();
+	  
+	  if (customerSubscriptions.size() == 0) {
+		  System.out.println("CREATING NEW TARIFFS");
+		  createInitialTariffs();
+	  }
+	  
+	  
+//	  
+//	if(timeslotIndex % 6 == 0) {
+//		for (TariffSpecification tariffSpec : customerSubscriptions.keySet()) {
+//			if(tariffSpec != null && customerSubscriptions.get(tariffSpec) != null) {
+//				System.out.println("Tariff: " + tariffSpec.toString());
+//				System.out.println("  Subscribers: " + (customerSubscriptions.get(tariffSpec).size()));
+//			}
+//			else {
+//				System.out.println("wierd tariff ");
+//			}
+//		}
+//	}
 	/*
 
 	List<TariffSpecification> newTariffs = this.tariffManager.createNewTariffs(this.competingTariffs);
@@ -447,7 +442,7 @@ implements PortfolioManager, Initializable, Activatable
 	*/
 	
 	System.out.println("________________________________________________________________________");
-	if ((timeslotIndex + 1) % 6 == 0) {
+	if ((timeslotIndex - 1) % 6 == 0) {
 		List<Tariff> tariffs = tariffRepo
 				.findTariffsByBroker(brokerContext.getBroker());
 		List<TariffSpecification> candidates = new ArrayList<TariffSpecification>();
@@ -673,14 +668,20 @@ implements PortfolioManager, Initializable, Activatable
   // test-support method
   HashMap<String, Integer> getCustomerCounts()
   {
+	int trueSubscribers = 0;
     HashMap<String, Integer> result = new HashMap<>();
     for (TariffSpecification spec : customerSubscriptions.keySet()) {
       Map<CustomerInfo, CustomerRecord> customerMap = customerSubscriptions.get(spec);
       for (CustomerRecord record : customerMap.values()) {
-        result.put(record.customer.getName() + spec.getPowerType(), 
-                    record.subscribedPopulation);
+    	
+    	String name = "NULL CUSTOMER";
+    	if(record.customer != null)
+    		name = record.customer.getName();
+        result.put(name + spec.getPowerType(), record.subscribedPopulation);
+        trueSubscribers += record.subscribedPopulation;
       }
     }
+    System.out.println("Subscribed Population: " + trueSubscribers);
     return result;
   }
 
