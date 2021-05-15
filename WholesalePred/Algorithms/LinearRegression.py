@@ -4,14 +4,15 @@ from sklearn.linear_model import LinearRegression
 from sklearn import metrics
 
 class LinearRegression:
-    def __init__(self):
-        self.model = LinearRegression()
+    model = LinearRegression()
 
-    def train(self, data_X, data_Y):
-        self.model.fit(data_X, data_Y)
+    @staticmethod
+    def train(data_X, data_Y):
+        LinearRegression.model.fit(data_X, data_Y)
 
-    def predict(self, data):
-        prediction = self.model.predict(data)
+    @staticmethod
+    def predict(data):
+        prediction = LinearRegression.model.predict(data)
         return prediction
 
     @staticmethod

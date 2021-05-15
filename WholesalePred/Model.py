@@ -17,22 +17,22 @@ class Model:
         return self.predict(data)
 
     def train(self, data_x, data_y):
-        if "train" not in self.model.__dir__():
+        if "train" not in dir(self.model):
             raise("The model should implement train method")
 
         self.model.train(data_x, data_y)
     
     def predict(self, data):
-        if "predict" not in self.model.__dir__():
+        if "predict" not in dir(self.model):
             raise("The model should implement predict method")
 
         return self.model.predict(data)
 
-    def get_error(self,data):
-        if "get_error" not in self.model.__dir__():
+    def get_error(self,real, prediction):
+        if "get_error" not in dir(self.model):
             raise("The model should implement get_error method")
 
-        return self.model.get_error(data)
+        return self.model.get_error(real, prediction)
     
     def save_model(self):
         file_path = f'WholesalePred/model_data/{self.name}'

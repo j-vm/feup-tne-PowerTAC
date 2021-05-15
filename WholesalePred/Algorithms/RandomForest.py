@@ -3,14 +3,15 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn import metrics
 
 class RandomForest:
-    def __init__(self):
-        self.model = RandomForestRegressor(n_estimators=400, random_state=0)
+    model = RandomForestRegressor(n_estimators=400, random_state=0)
 
-    def train(self, data_X, data_Y):
-        self.model.fit(data_X, data_Y)
-
-    def predict(self, data):
-        prediction = self.model.predict(data)
+    @staticmethod
+    def train(data_X, data_Y):
+        RandomForest.model.fit(data_X, data_Y)
+ 
+    @staticmethod
+    def predict(data):
+        prediction = RandomForest.model.predict(data)
         return prediction
 
     @staticmethod
