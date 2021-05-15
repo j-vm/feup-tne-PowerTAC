@@ -29,6 +29,7 @@ def LinearRegression():
     X1_train, X1_test, y1_train, y1_test = train_test_split(X1, y1, test_size=0.4, random_state=0)
 
     model.single_sample_train(X_train, y_train)
+    model.single_sample_train([[9.00,3571,1976,0.5250]], [[541]])
     model.single_sample_train(X1_train, y1_train)
 
     y_pred = model.single_sample_predict(X_test)
@@ -58,6 +59,7 @@ def RandomForest():
     X1_test = sc.transform(X1_test)
 
     model.single_sample_train(X_train, y_train)
+    model.single_sample_train([[9.00,3571,1976,0.5250]], [541])
     model.single_sample_train(X1_train, y1_train)
 
     y_pred = model.single_sample_predict(X_test)
