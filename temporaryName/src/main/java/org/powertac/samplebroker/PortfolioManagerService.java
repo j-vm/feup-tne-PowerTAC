@@ -56,6 +56,8 @@ import org.powertac.samplebroker.tariffoptimizer.TariffManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.util.concurrent.Service.State;
+
 import org.apache.commons.math3.util.Pair;
 
 /**
@@ -74,6 +76,8 @@ import org.apache.commons.math3.util.Pair;
 public class PortfolioManagerService 
 implements PortfolioManager, Initializable, Activatable
 {
+  private boolean DEBUG = false;
+
   static Logger log = LogManager.getLogger(PortfolioManagerService.class);
   
   private BrokerContext brokerContext; // master
@@ -411,7 +415,7 @@ implements PortfolioManager, Initializable, Activatable
 	  this.getCustomerCounts();
 	  
 	  if (customerSubscriptions.size() == 0) {
-		  System.out.println("CREATING NEW TARIFFS");
+		  if(this.DEBUG) System.out.println("CREATING NEW TARIFFS");
 		  createInitialTariffs();
 	  }
 	  
@@ -420,11 +424,11 @@ implements PortfolioManager, Initializable, Activatable
 //	if(timeslotIndex % 6 == 0) {
 //		for (TariffSpecification tariffSpec : customerSubscriptions.keySet()) {
 //			if(tariffSpec != null && customerSubscriptions.get(tariffSpec) != null) {
-//				System.out.println("Tariff: " + tariffSpec.toString());
-//				System.out.println("  Subscribers: " + (customerSubscriptions.get(tariffSpec).size()));
+//				if(this.DEBUG) System.out.println("Tariff: " + tariffSpec.toString());
+//				if(this.DEBUG) System.out.println("  Subscribers: " + (customerSubscriptions.get(tariffSpec).size()));
 //			}
 //			else {
-//				System.out.println("wierd tariff ");
+//				if(this.DEBUG) System.out.println("wierd tariff ");
 //			}
 //		}
 //	}
@@ -432,8 +436,8 @@ implements PortfolioManager, Initializable, Activatable
 
 	List<TariffSpecification> newTariffs = this.tariffManager.createNewTariffs(this.competingTariffs);
 	for (TariffSpecification spec : newTariffs) {
-		System.out.println("[PMS] Adding tariff");
-		System.out.println(spec.toString());
+		if(this.DEBUG) System.out.println("[PMS] Adding tariff");
+		if(this.DEBUG) System.out.println(spec.toString());
     	customerSubscriptions.put(spec, new LinkedHashMap<>());
     	tariffRepo.addSpecification(spec);
     	brokerContext.sendMessage(spec);
@@ -441,45 +445,47 @@ implements PortfolioManager, Initializable, Activatable
 	//add new tariffs
 	*/
 	
-	System.out.println("________________________________________________________________________");
-	if ((timeslotIndex - 1) % 6 == 0) {
+	//if(this.DEBUG) System.out.println("________________________________________________________________________");
+	if ((timeslotIndex - 2) % 6 == 0) {
 		List<Tariff> tariffs = tariffRepo
 				.findTariffsByBroker(brokerContext.getBroker());
 		List<TariffSpecification> candidates = new ArrayList<TariffSpecification>();
 		Map<TariffSpecification, Tariff> candidateTariffs = new HashMap<TariffSpecification, Tariff>();
 		for(Tariff tariff: tariffs) {
+			if(tariff.getState() != Tariff.State.WITHDRAWN) {
 				candidates.add(tariff.getTariffSpec());
 				candidateTariffs.put(tariff.getTariffSpec(),tariff);
 
-				System.out.println("Candidate: " + tariff.getId());
+				if(this.DEBUG) System.out.println("Candidate: " + tariff.getId());
+			}
 		}
 		
 		if (null == candidates || 0 == candidates.size())
-			System.out.println("[PMS] No tariffs found for broker");
+			if(this.DEBUG) System.out.println("[PMS] No tariffs found for broker");
 		else {
 			List<Pair<TariffSpecification, TariffSpecification>> alteredTariffs = this.tariffManager.alterTariffs(timeslotIndex, candidates);
 			
-			System.out.println(alteredTariffs);
+			//if(this.DEBUG) System.out.println(alteredTariffs);
 			for (int i = 0; i < alteredTariffs.size(); i++) {
 				var spec = alteredTariffs.get(i).getSecond();
 				if (alteredTariffs.get(i) != null) {
 					var oldc = alteredTariffs.get(i).getFirst();
 					
 					//adding tariff
-					System.out.println("[PMS]Superseding tariff");
-					System.out.println(oldc.toString() + " => " + spec.toString());
+					if(this.DEBUG) System.out.println("[PMS]Superseding tariff");
+					if(this.DEBUG) System.out.println(oldc.toString() + " => " + spec.toString());
 					spec.addSupersedes(oldc.getId());
 					brokerContext.sendMessage(spec);
+					Tariff tariff = new Tariff(spec);
+					Tariff oldTariff = tariffRepo.findTariffById(oldc.getId());
+					oldTariff.setState(Tariff.State.WITHDRAWN);
+					tariffRepo.addTariff(tariff);
+					tariffRepo.addSpecification(spec);
 					
-					tariffRepo.addTariff(new Tariff(spec));
-					//transfer customer records
-					customerSubscriptions.put(spec, new LinkedHashMap<>());
-
 					// revoke the old one
 					TariffRevoke revoke = new TariffRevoke(brokerContext.getBroker(), oldc);
-					this.tariffRepo.deleteTariff(candidateTariffs.get(oldc));
-					System.out.println("Deleted Tariff from repo: " + candidateTariffs.get(oldc));
 					brokerContext.sendMessage(revoke);
+					
 				}
 			}
 		}     	
