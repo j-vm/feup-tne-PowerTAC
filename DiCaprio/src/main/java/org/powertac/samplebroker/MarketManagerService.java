@@ -269,8 +269,8 @@ implements MarketManager, Initializable, Activatable
       JSONObject orderbookJson = new JSONObject();
       orderbookJson.put("timeslotIndex", orderbook.getTimeslotIndex());
       orderbookJson.put("clearingPrice", orderbook.getClearingPrice());
-      orderbookJson.put("asks", orderbook.getAsks());
-      orderbookJson.put("bids", orderbook.getBids());
+      orderbookJson.put("asks", orderbook.getAsks());  // no need to send this to the models
+      orderbookJson.put("bids", orderbook.getBids());  // no need to send this to the models
       orderbookJson.put("slotInDay", orderbook.getTimeslot().slotInDay());
 
       pyComs.trigger(orderbookJson, PyComs.jsonType.get("orderbookJsonType"));

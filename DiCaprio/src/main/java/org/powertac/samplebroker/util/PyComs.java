@@ -53,7 +53,7 @@ public class PyComs {
 
         var listOfMaps2 = new ArrayList<HashMap<Integer, ArrayList<JSONObject>>>();
         listOfMaps2.add(clearedTradeJson);
-        listOfMaps2.add(orderbookJson);
+        //listOfMaps2.add(orderbookJson);   //does not need to be send
 
         var shouldSend = true;
 
@@ -151,9 +151,6 @@ public class PyComs {
         
         switch(type){
             case "energyReportType":
-                System.out.println(mapLastIndexCleared);
-                System.out.println(mapLastIndexOrderBook);
-                System.out.println(String.format("energyReport - %s", currSlot));
                 energyReportMap.put(Integer.parseInt(currSlot), obj);
                 //Fills missing values if trades on 0 slot did not happen
                 if(lastIndexCleared == 23) {
@@ -171,7 +168,6 @@ public class PyComs {
                 trySend(Integer.parseInt(currSlot));
                 break;
             case "competitionJsonType":
-                // System.out.println(String.format("competitionJson - %s", currSlot));
                 competitionJson.put(Integer.parseInt(currSlot), obj);
                 numberOfCompetitors = (Integer) obj.get("noCompetitors");
                 numberOfCustomers = (Integer) obj.get("noCustomer");
@@ -206,7 +202,6 @@ public class PyComs {
                     }  
                     clearedTrades.add(obj);
                     clearedTradeJson.put(mapLastIndexCleared, clearedTrades);  
-                    System.out.println("clearedTradeJson" +  mapLastIndexCleared + "         slot:" + slotInDay);
                     lastIndexCleared = slotInDay;
                 }
                 break;
@@ -240,16 +235,13 @@ public class PyComs {
                     }  
                     orderBooks.add(obj);
                     orderbookJson.put(mapLastIndexOrderBook, orderBooks);  
-                    System.out.println("orderbookJson" +  mapLastIndexOrderBook + "   Slot:" + slotInDayOrder);
                     lastIndexOrderBook = slotInDayOrder;
                 }
                 break;
             case "weatherForecastJsonType":
-                // System.out.println(String.format("weatherForecastJson - %s", currSlot));
                 weatherForecastJson.put(Integer.parseInt(currSlot), obj);
                 break;
             case "weatherJsonType":
-                // System.out.println(String.format("weatherJson - %s", currSlot));
                 weatherJson.put(Integer.parseInt(currSlot), obj);
                 break;
         }
