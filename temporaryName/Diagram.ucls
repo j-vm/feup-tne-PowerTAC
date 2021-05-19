@@ -5,7 +5,7 @@
     name="org.deeplearning4j.rl4j.learning.sync.qlearning.discrete.TDTargetAlgorithm.DoubleDQN" project="temporaryName" 
     file="C:/Users/HP/.m2/repository/org/deeplearning4j/rl4j-core/1.0.0-beta7/rl4j-core-1.0.0-beta7.jar" binary="true" 
     corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="836" y="1198"/>    
+    <position height="-1" width="-1" x="598" y="1102"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -26,7 +26,7 @@
   <class id="3" language="java" name="org.deeplearning4j.rl4j.learning.sync.qlearning.QLearning" project="temporaryName" 
     file="C:/Users/HP/.m2/repository/org/deeplearning4j/rl4j-core/1.0.0-beta7/rl4j-core-1.0.0-beta7.jar" binary="true" 
     corner="BOTTOM_RIGHT">    
-    <position height="519" width="399" x="915" y="145"/>    
+    <position height="519" width="399" x="806" y="73"/>    
     <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -37,7 +37,7 @@
     project="temporaryName" 
     file="C:/Users/HP/.m2/repository/org/deeplearning4j/rl4j-core/1.0.0-beta7/rl4j-core-1.0.0-beta7.jar" binary="true" 
     corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1293" y="1303"/>    
+    <position height="-1" width="-1" x="671" y="951"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -66,29 +66,50 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="7" language="java" name="org.powertac.samplebroker.mlmodel.DQNSource" project="temporaryName" 
-    file="/temporaryName/src/main/java/org/powertac/samplebroker/mlmodel/DQNSource.java" binary="false" 
+  <class id="7" language="java" name="org.deeplearning4j.rl4j.learning.sync.qlearning.QLearning.QLConfiguration" 
+    project="temporaryName" 
+    file="C:/Users/HP/.m2/repository/org/deeplearning4j/rl4j-core/1.0.0-beta7/rl4j-core-1.0.0-beta7.jar" binary="true" 
     corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1641" y="529"/>    
+    <position height="-1" width="-1" x="1541" y="343"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <association id="8">    
+  <class id="8" language="java" 
+    name="org.deeplearning4j.rl4j.learning.sync.qlearning.QLearning.QLConfiguration.QLConfigurationBuilder" 
+    project="temporaryName" 
+    file="C:/Users/HP/.m2/repository/org/deeplearning4j/rl4j-core/1.0.0-beta7/rl4j-core-1.0.0-beta7.jar" binary="true" 
+    corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1076" y="923"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <association id="9">    
     <end type="SOURCE" refId="2" navigable="false">      
-      <attribute id="9" name="tdTargetAlgorithm">        
+      <attribute id="10" name="tdTargetAlgorithm">        
         <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
-      <multiplicity id="10" minimum="0" maximum="1">        
+      <multiplicity id="11" minimum="0" maximum="1">        
         <position height="0" width="0" x="0" y="0"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="5" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <generalization id="11">    
+  <nesting id="12">    
+    <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="7"/>  
+  </nesting>  
+  <nesting id="13">    
+    <end type="SOURCE" refId="7"/>    
+    <end type="TARGET" refId="8"/>  
+  </nesting>  
+  <generalization id="14">    
     <end type="SOURCE" refId="2"/>    
     <end type="TARGET" refId="3"/>  
   </generalization>  

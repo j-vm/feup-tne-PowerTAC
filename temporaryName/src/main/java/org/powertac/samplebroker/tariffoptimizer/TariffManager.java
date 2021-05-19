@@ -5,8 +5,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.LinkedTransferQueue;
 
 import org.apache.commons.math3.util.Pair;
+import org.deeplearning4j.rl4j.observation.Observation;
 import org.powertac.common.Broker;
 import org.powertac.common.Rate;
 import org.powertac.common.Tariff;
@@ -15,22 +17,70 @@ import org.powertac.common.enumerations.PowerType;
 import org.powertac.common.msg.TariffRevoke;
 import org.powertac.common.repo.TariffRepo;
 import org.powertac.samplebroker.interfaces.BrokerContext;
+import org.powertac.samplebroker.mlmodel.DQNManager;
+import org.powertac.samplebroker.mlmodel.DQNSource;
+import org.powertac.samplebroker.mlmodel.PowerTacMDP;
+import org.powertac.samplebroker.mlmodel.PowerTacMDP.PowerTAC_ACTION;
 
 public class TariffManager {
 	boolean DEBUG = false;
 	double INITIAL_DECREASE = 0.2;
 	double PERIODIC_DECREASE = -0.05;
+	private LinkedTransferQueue<Observation> obsIn = new LinkedTransferQueue<>();
+	private LinkedTransferQueue<PowerTAC_ACTION> actionOut = new LinkedTransferQueue<>();
+	private DQNManager dqnManager;
+	private DQNSource dqnSource = new DQNSource();
+	private PowerTacMDP mdp;
+	private double[] previousObs = new double[8];
 
 	public TariffManager(TariffRepo tariffRepo, BrokerContext brokerContext) {
 		super();
 		this.tariffRepo = tariffRepo;
 		this.brokerContext = brokerContext;
+		this.dqnSource.createModel();
+	}
+
+	public void initialize(Observation initialState) {
+		this.mdp = new PowerTacMDP(this.obsIn, this.actionOut, initialState);
+		this.dqnManager = new DQNManager(dqnSource, mdp);
+		this.dqnManager.start();
 	}
 
 	private Map<PowerType, List<TariffSpecification>> competingTariffs;
 	private TariffRepo tariffRepo;
 	private BrokerContext brokerContext;
 	private Set<PowerType> powerTypes = new HashSet<>();
+
+	public Observation observe(Integer balance, Integer subscriptions, Double storageConsumption,
+			Integer storageSubscriptions, Double productionConsumption, Integer productionSubscriptions,
+			Double consumptionConsumption, Integer consumptionSubscriptions) {
+		System.out.println("MADE OBSERVATION!");
+		double[] obs = new double[8];
+		obs[0] = (double) balance;
+		obs[1] = (double) subscriptions;
+		obs[2] = (double) storageConsumption;
+		obs[3] = (double) storageSubscriptions;
+		obs[4] = (double) productionConsumption;
+		obs[5] = (double) productionSubscriptions;
+		obs[6] = (double) consumptionConsumption;
+		obs[7] = (double) consumptionSubscriptions;
+
+		double[] changeObservation = new double[8];
+
+		changeObservation[0] = this.previousObs[0] - obs[0];
+		changeObservation[1] = this.previousObs[1] - obs[1];
+		changeObservation[2] = this.previousObs[2] - obs[2];
+		changeObservation[3] = this.previousObs[3] - obs[3];
+		changeObservation[4] = this.previousObs[4] - obs[4];
+		changeObservation[5] = this.previousObs[5] - obs[5];
+		changeObservation[6] = this.previousObs[6] - obs[6];
+		changeObservation[7] = this.previousObs[7] - obs[7];
+
+		this.previousObs = obs;
+
+		return ObservationGenerator.generate(changeObservation);
+
+	}
 
 	public List<TariffSpecification> createNewTariffs(Map<PowerType, List<TariffSpecification>> competingTariffs) {
 		// TODO Auto-generated method stub
@@ -50,10 +100,19 @@ public class TariffManager {
 		return initialTariffs;
 	}
 
+	private boolean firstAction = true;
+
 	public List<Pair<TariffSpecification, TariffSpecification>> alterTariffs(int timeslotIndex,
-			List<TariffSpecification> specs) {
+			List<TariffSpecification> specs, Observation obs) {
 
 		List<Pair<TariffSpecification, TariffSpecification>> newTariffSpecs = new ArrayList<Pair<TariffSpecification, TariffSpecification>>();
+
+		if (firstAction) {
+			this.firstAction = false;
+		} else {
+			boolean transfer = this.obsIn.tryTransfer(obs);
+			System.out.println("[TM] Obs in:" + obs.toString() + "State:" + transfer);
+		}
 
 		if (this.DEBUG)
 			System.out.println("");
@@ -67,6 +126,14 @@ public class TariffManager {
 			System.out.println("My tariffs:");
 		if (this.DEBUG)
 			System.out.println("");
+
+		try {
+			PowerTAC_ACTION action = this.actionOut.take();
+			System.out.println("[TM] Action Out: " + action.name());
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		for (TariffSpecification spec : specs) {
 			System.out.println("Updating spec: " + spec.getId());

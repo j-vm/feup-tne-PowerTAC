@@ -66,30 +66,43 @@
       <version>20180130</version>
     </dependency>
     
-<!-- 	 
-	https://mvnrepository.com/artifact/org.deeplearning4j/rl4j-api
+<!-- https://mvnrepository.com/artifact/org.deeplearning4j/rl4j-api-->
 	<dependency>
 	    <groupId>org.deeplearning4j</groupId>
 	    <artifactId>rl4j-api</artifactId>
 	    <version>1.0.0-beta7</version>
 	</dependency>
 	
-	https://mvnrepository.com/artifact/org.deeplearning4j/deeplearning4j-core
+	<!-- https://mvnrepository.com/artifact/org.deeplearning4j/deeplearning4j-core-->
 	<dependency>
 	    <groupId>org.deeplearning4j</groupId>
 	    <artifactId>deeplearning4j-core</artifactId>
 	    <version>1.0.0-beta7</version>
 	</dependency>
+	
+	<dependency>
+	 	<groupId>org.nd4j</groupId>
+	 	<artifactId>nd4j-native</artifactId>
+	 	<version>1.0.0-beta7</version>
+	</dependency>
 			
-	https://mvnrepository.com/artifact/org.deeplearning4j/rl4j-core
+	<!-- https://mvnrepository.com/artifact/org.deeplearning4j/rl4j-core-->
 	<dependency>
 	    <groupId>org.deeplearning4j</groupId>
 	    <artifactId>rl4j-core</artifactId>
 	    <version>1.0.0-beta7</version>
 	</dependency>
+	
+
+	<dependency>
+		<groupId>org.projectlombok</groupId>
+		<artifactId>lombok</artifactId>
+		<version>1.18.20</version>
+		<scope>provided</scope>
+	</dependency>
 
 
-	    
+<!--	    
     https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
     <dependency>
       <groupId>com.googlecode.json-simple</groupId>
