@@ -106,12 +106,16 @@ public class TariffManager {
 			List<TariffSpecification> specs, Observation obs) {
 
 		List<Pair<TariffSpecification, TariffSpecification>> newTariffSpecs = new ArrayList<Pair<TariffSpecification, TariffSpecification>>();
-
+		System.out.println("[TM] Altering Tariffs at timeslot: " + timeslotIndex);
 		if (firstAction) {
 			this.firstAction = false;
 		} else {
-			boolean transfer = this.obsIn.tryTransfer(obs);
-			System.out.println("[TM] Obs in:" + obs.toString() + "State:" + transfer);
+			try {
+				this.obsIn.transfer(obs);
+				System.out.println("[TM] Obs in:" + obs.toString());
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 
 		if (this.DEBUG)

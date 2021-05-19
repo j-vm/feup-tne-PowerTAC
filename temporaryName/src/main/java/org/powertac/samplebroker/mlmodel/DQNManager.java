@@ -37,31 +37,31 @@ class PowerTacTrainingListener implements TrainingListener {
 
 	@Override
 	public ListenerResponse onTrainingStart() {
-		// TODO Auto-generated method stub
+		System.out.println("Training Started");
 		return null;
 	}
 
 	@Override
 	public void onTrainingEnd() {
-		// TODO Auto-generated method stub
-
+		System.out.println("Training Ended");
 	}
 
 	@Override
 	public ListenerResponse onNewEpoch(IEpochTrainer trainer) {
-		// TODO Auto-generated method stub
+		System.out.println("New Epoch: " + trainer.getStepCount());
 		return null;
 	}
 
 	@Override
 	public ListenerResponse onEpochTrainingResult(IEpochTrainer trainer, StatEntry statEntry) {
-		// TODO Auto-generated method stub
+		System.out
+				.println("Training Result: " + trainer.getStepCount() + " StatEntry reward: " + statEntry.getReward());
 		return null;
 	}
 
 	@Override
 	public ListenerResponse onTrainingProgress(ILearning learning) {
-		// TODO Auto-generated method stub
+		System.out.println("Training Progress: " + learning.getPolicy().toString());
 		return null;
 	}
 

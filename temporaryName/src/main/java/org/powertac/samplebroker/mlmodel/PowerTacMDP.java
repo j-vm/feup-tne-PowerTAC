@@ -59,9 +59,15 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 	@Override
 	public StepReply<Observation> step(Integer action) {
 
-		boolean transfer = this.actionOut.tryTransfer(PowerTAC_ACTION.values()[action]);
+		System.out.println("[MDP] EXECUTIN STEP w action: " + PowerTAC_ACTION.values()[action].name());
 
-		System.out.println("[MDP] Action out:" + action + "State:" + transfer);
+		try {
+			this.actionOut.transfer(PowerTAC_ACTION.values()[action]);
+			System.out.println("[MDP] Action out:" + action);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		Observation obs;
 		try {
 			obs = this.obsIn.take();
