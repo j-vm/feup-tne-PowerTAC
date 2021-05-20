@@ -38,7 +38,7 @@ class PowerTacTrainingListener implements TrainingListener {
 	@Override
 	public ListenerResponse onTrainingStart() {
 		System.out.println("Training Started");
-		return null;
+		return ListenerResponse.CONTINUE;
 	}
 
 	@Override
@@ -49,20 +49,20 @@ class PowerTacTrainingListener implements TrainingListener {
 	@Override
 	public ListenerResponse onNewEpoch(IEpochTrainer trainer) {
 		System.out.println("New Epoch: " + trainer.getStepCount());
-		return null;
+		return ListenerResponse.CONTINUE;
 	}
 
 	@Override
 	public ListenerResponse onEpochTrainingResult(IEpochTrainer trainer, StatEntry statEntry) {
 		System.out
 				.println("Training Result: " + trainer.getStepCount() + " StatEntry reward: " + statEntry.getReward());
-		return null;
+		return ListenerResponse.CONTINUE;
 	}
 
 	@Override
 	public ListenerResponse onTrainingProgress(ILearning learning) {
 		System.out.println("Training Progress: " + learning.getPolicy().toString());
-		return null;
+		return ListenerResponse.CONTINUE;
 	}
 
 }

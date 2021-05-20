@@ -25,7 +25,7 @@ import org.powertac.samplebroker.mlmodel.PowerTacMDP.PowerTAC_ACTION;
 public class TariffManager {
 	boolean DEBUG = false;
 	double INITIAL_DECREASE = 0.2;
-	double PERIODIC_DECREASE = -0.05;
+	double TARIFF_CHANGE = 0.05;
 	private LinkedTransferQueue<Observation> obsIn = new LinkedTransferQueue<>();
 	private LinkedTransferQueue<PowerTAC_ACTION> actionOut = new LinkedTransferQueue<>();
 	private DQNManager dqnManager;
@@ -134,80 +134,61 @@ public class TariffManager {
 		try {
 			PowerTAC_ACTION action = this.actionOut.take();
 			System.out.println("[TM] Action Out: " + action.name());
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+
+			for (TariffSpecification spec : specs) {
+				switch (action) {
+				case STORAGE_UP:
+					if (spec.getPowerType().isStorage()) {
+						var newSpec = this.alterStorageTariff(spec, TARIFF_CHANGE);
+						if (newSpec != null)
+							newTariffSpecs.add(new Pair<>(spec, newSpec));
+					}
+					break;
+				case STORAGE_DOWN:
+					if (spec.getPowerType().isStorage()) {
+						var newSpec = this.alterStorageTariff(spec, -TARIFF_CHANGE);
+						if (newSpec != null)
+							newTariffSpecs.add(new Pair<>(spec, newSpec));
+					}
+					break;
+				case PRODUCTION_UP:
+					if (spec.getPowerType().isProduction()) {
+						var newSpec = this.alterProductionTariff(spec, TARIFF_CHANGE);
+						if (newSpec != null)
+							newTariffSpecs.add(new Pair<>(spec, newSpec));
+					}
+					break;
+				case PRODUCTION_DOWN:
+					if (spec.getPowerType().isProduction()) {
+						var newSpec = this.alterProductionTariff(spec, -TARIFF_CHANGE);
+						if (newSpec != null)
+							newTariffSpecs.add(new Pair<>(spec, newSpec));
+					}
+					break;
+				case CONSUMPTION_UP:
+					if (spec.getPowerType().isConsumption()) {
+						var newSpec = this.alterConsumptionTariff(spec, TARIFF_CHANGE);
+						if (newSpec != null)
+							newTariffSpecs.add(new Pair<>(spec, newSpec));
+					}
+					break;
+				case CONSUMPTION_DONW:
+					if (spec.getPowerType().isConsumption()) {
+						var newSpec = this.alterConsumptionTariff(spec, -TARIFF_CHANGE);
+						if (newSpec != null)
+							newTariffSpecs.add(new Pair<>(spec, newSpec));
+					}
+					break;
+				case STAY:
+					System.out.println("No Tariffs Changed");
+					break;
+				default:
+					throw new Exception("Unknown action: " + action);
+				}
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		for (TariffSpecification spec : specs) {
-			System.out.println("Updating spec: " + spec.getId());
-			if (spec.getPowerType().isConsumption()) {
-				var newSpec = this.alterConsumptionTariff(spec, PERIODIC_DECREASE); // TODO: change periodic decrease by
-																					// dqn
-				if (newSpec != null)
-					newTariffSpecs.add(new Pair<>(spec, newSpec));
-
-			} else if (spec.getPowerType().isProduction()) {
-				var newSpec = this.alterProductionTariff(spec, PERIODIC_DECREASE);
-				if (newSpec != null)
-					newTariffSpecs.add(new Pair<>(spec, newSpec));
-
-			} else if (spec.getPowerType().isStorage()) {
-				var newSpec = this.alterStorageTariff(spec, PERIODIC_DECREASE);
-				if (newSpec != null)
-					newTariffSpecs.add(new Pair<>(spec, newSpec));
-
-			} else if (spec.getPowerType().isInterruptible()) {
-				var newSpec = this.alterInterruptableTariff(spec, PERIODIC_DECREASE);
-				if (newSpec != null)
-					newTariffSpecs.add(new Pair<>(spec, newSpec));
-			}
-
-		}
-//			for (Map.Entry<PowerType, List<TariffSpecification>> entry : competingTariffs.entrySet())
-//				printTariffSpecificationList(entry.getKey(), entry.getValue());
-//	
-//			if(this.DEBUG) System.out.println("");
-//			if(this.DEBUG) System.out.println("TNA Tariff update:");
-//			if(this.DEBUG) System.out.println("");
-//			
-//			var myTariffs = List.copyOf(tariffRepo.findTariffsByBroker(this.brokerContext.getBroker()));
-//			if(this.DEBUG) System.out.println("MyTariffs: " + myTariffs.toString());
-//			for (Tariff tariff : myTariffs) {
-//				System.out.println("tarif broker: " + tariff.getBroker());
-//				System.out.println("tarif state: " + tariff.getState());
-//				System.out.println("tariff expired: " + tariff.isExpired());
-//				System.out.println("tarif is subscribable: " + tariff.isSubscribable());
-//				System.out.println("tarif is expired: " + tariff.isExpired());
-//				if(this.DEBUG) System.out.println("tariff is active? " + tariff.isActive());
-//				if(tariff.getIsSupersededBy() == null) {
-//
-//					TariffSpecification newTariffSpec = lowerTariff(tariff.getTariffSpec(), this.PERIODIC_DECREASE); //SUBSTITUIR LOWER TARIFF COM MODELO AI
-//					if(this.DEBUG) System.out.println(tariff.toString() + "  ->  " + newTariffSpec.toString());
-//					if(this.DEBUG) System.out.println("");
-//					
-//					supersedeTariff(newTariffSpec, tariff.getTariffSpec());
-//				}
-		// ************************************testing************************************************
-		// */
-		// "mytariffs" from line 66 arent the same that entered the function, wich ones
-		// should we use???
-		/*
-		 * for(List<TariffSpecification> lists : competingTariffs.values()){
-		 * System.out.println("--------------------------------------------\n");
-		 * for(TariffSpecification tarif : lists){ TariffSpecification newTariff =
-		 * tarif;
-		 * 
-		 * System.out.println("competing tariffs: " + tarif.toString());
-		 * System.out.println("broker: " + tarif.getBroker());
-		 * System.out.println("is valid: " + tarif.isValid()); List<Rate> rates =
-		 * tarif.getRates(); for (Rate rate : rates){ rate.withValue(-0.8);
-		 * rate.withWeeklyBegin(1); rate.withWeeklyEnd(7); System.out.println("rates: "
-		 * + rate.toString()); newTariff.addRate(rate); }
-		 * newTariff.addSupersedes(tarif.getId()); }
-		 * System.out.println("--------------------------------------------\n"); }
-		 */
-
 		if (this.DEBUG)
 			System.out.println("NEWTARIFFSPEC spec: " + newTariffSpecs);
 		if (this.DEBUG)
