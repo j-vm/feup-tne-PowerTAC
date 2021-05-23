@@ -35,6 +35,9 @@ public class DQNManager extends Thread {
 
 class PowerTacTrainingListener implements TrainingListener {
 
+	private int trainingSteps = 0;
+	private double cumulativeReward = 0;
+
 	@Override
 	public ListenerResponse onTrainingStart() {
 		System.out.println("Training Started");
@@ -54,14 +57,16 @@ class PowerTacTrainingListener implements TrainingListener {
 
 	@Override
 	public ListenerResponse onEpochTrainingResult(IEpochTrainer trainer, StatEntry statEntry) {
-		System.out
-				.println("Training Result: " + trainer.getStepCount() + " StatEntry reward: " + statEntry.getReward());
+		this.cumulativeReward += statEntry.getReward();
+		this.trainingSteps++;
+		System.out.println("Training Result: " + trainer.getStepCount() + " StatEntry reward: " + statEntry.getReward()
+				+ "Reward average: " + this.cumulativeReward / trainingSteps);
 		return ListenerResponse.CONTINUE;
 	}
 
 	@Override
 	public ListenerResponse onTrainingProgress(ILearning learning) {
-		System.out.println("Training Progress: " + learning.getPolicy().toString());
+		System.out.println("Training Progress: " + learning.getPolicy());
 		return ListenerResponse.CONTINUE;
 	}
 

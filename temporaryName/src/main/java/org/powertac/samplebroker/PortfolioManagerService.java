@@ -70,7 +70,7 @@ import org.springframework.stereotype.Service;
 @Service // Spring creates a single instance at startup
 public class PortfolioManagerService implements PortfolioManager, Initializable, Activatable {
 	private boolean DEBUG = false;
-
+	private int EXPECTED_STEPS;
 	private int baseTimeIndex = -1;
 
 	static Logger log = LogManager.getLogger(PortfolioManagerService.class);
@@ -143,6 +143,11 @@ public class PortfolioManagerService implements PortfolioManager, Initializable,
 		customerSubscriptions = new LinkedHashMap<>();
 		competingTariffs = new HashMap<>();
 		notifyOnActivation.clear();
+		// this.EXPECTED_STEPS =
+		// this.propertiesService.getIntegerProperty("expectedTimeSlots", null) / 6;
+		// System.out.println("EXPECTED_TRAIN_STEPS: " + EXPECTED_STEPS);
+		this.EXPECTED_STEPS = 130;
+		// this.EXPECTED_STEPS = this.propertiesService.getIntegerProperty(null, null)
 	}
 
 	// -------------- data access ------------------
@@ -371,7 +376,7 @@ public class PortfolioManagerService implements PortfolioManager, Initializable,
 				System.out.println("CREATING NEW TARIFFS");
 
 			this.tariffManager = new TariffManager(this.tariffRepo, this.brokerContext);
-			this.tariffManager.initialize(this.observeCurrentEnv());
+			this.tariffManager.initialize(this.observeCurrentEnv(timeslotIndex), EXPECTED_STEPS);
 			createInitialTariffs();
 			this.skippedFirstImprovement = false;
 		}
@@ -392,7 +397,7 @@ public class PortfolioManagerService implements PortfolioManager, Initializable,
 			}
 			if (null != candidates && 0 != candidates.size()) {
 				List<Pair<TariffSpecification, TariffSpecification>> alteredTariffs = this.tariffManager
-						.alterTariffs(timeslotIndex, candidates, this.observeCurrentEnv());
+						.alterTariffs(timeslotIndex, candidates, this.observeCurrentEnv(timeslotIndex));
 
 				if (this.DEBUG)
 					System.out.println(alteredTariffs);
@@ -472,22 +477,59 @@ public class PortfolioManagerService implements PortfolioManager, Initializable,
 		}
 	}
 
-	private Observation observeCurrentEnv() {
+	private Observation observeCurrentEnv(int timeSlotIndex) {
 		// TODO
-		Integer balance = (int) this.brokerContext.getBroker().getCashBalance();
-		Integer subscriptions = getSubscribers();
-		Double storageConsumption = 1.0;
-		Integer storageSubscriptions = 1;
-		Double productionConsumption = 1.0;
-		Integer productionSubscriptions = 1;
-		Double consumptionConsumption = 1.0;
-		Integer consumptionSubscriptions = 1;
+		Double balance = this.brokerContext.getBroker().getCashBalance();
+		System.out.println("Broker: " + this.brokerContext.getBrokerUsername());
+		System.out.println("Broker: " + this.brokerContext.getBroker().getCashBalance());
+
+		Double subscriptions = getSubscribers();
+
+		double[] metrics = this.generateMetricsByPowerType(timeSlotIndex);
+
+		Double storageConsumption = metrics[0];
+		Double storageSubscriptions = metrics[1];
+		Double productionConsumption = metrics[2];
+		Double productionSubscriptions = metrics[3];
+		Double consumptionConsumption = metrics[4];
+		Double consumptionSubscriptions = metrics[5];
 		return this.tariffManager.observe(balance, subscriptions, storageConsumption, storageSubscriptions,
-				productionConsumption, productionSubscriptions, consumptionConsumption, consumptionSubscriptions);
+				productionConsumption, productionSubscriptions, consumptionConsumption, consumptionSubscriptions,
+				timeSlotIndex - this.baseTimeIndex);
 	}
 
-	private int getSubscribers() {
-		int trueSubscribers = 0;
+	// Generates [storageConsumption; storageSubscriptions; productionConsumption;
+	// productionSubscriptions; consumptionConsumption; consumptionSubscriptions;]
+
+	private double[] generateMetricsByPowerType(int timeSlotIndex) {
+		double[] metrics = new double[6];
+		for (TariffSpecification spec : customerSubscriptions.keySet()) {
+			Map<CustomerInfo, CustomerRecord> customerMap = customerSubscriptions.get(spec);
+			for (CustomerRecord record : customerMap.values()) {
+				if (spec.getPowerType().isStorage()) {
+					metrics[0] += record.getUsage(timeSlotIndex);
+					metrics[1] += record.subscribedPopulation;
+				} else if (spec.getPowerType().isProduction()) {
+					metrics[2] += record.getUsage(timeSlotIndex);
+					metrics[3] += record.subscribedPopulation;
+				} else if (spec.getPowerType().isConsumption()) {
+					metrics[4] += record.getUsage(timeSlotIndex);
+					metrics[5] += record.subscribedPopulation;
+				}
+//
+//				String name = "NULL CUSTOMER";
+//				if (record.customer != null)
+//					name = record.customer.getName();
+//				result.put(name + spec.getPowerType(), record.subscribedPopulation);
+//				trueSubscribers += record.subscribedPopulation;
+			}
+		}
+
+		return metrics;
+	}
+
+	private double getSubscribers() {
+		double trueSubscribers = 0;
 		HashMap<String, Integer> result = new HashMap<>();
 		for (TariffSpecification spec : customerSubscriptions.keySet()) {
 			Map<CustomerInfo, CustomerRecord> customerMap = customerSubscriptions.get(spec);

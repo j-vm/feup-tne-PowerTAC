@@ -9,7 +9,6 @@ import java.util.concurrent.LinkedTransferQueue;
 
 import org.apache.commons.math3.util.Pair;
 import org.deeplearning4j.rl4j.observation.Observation;
-import org.powertac.common.Broker;
 import org.powertac.common.Rate;
 import org.powertac.common.Tariff;
 import org.powertac.common.TariffSpecification;
@@ -40,8 +39,8 @@ public class TariffManager {
 		this.dqnSource.createModel();
 	}
 
-	public void initialize(Observation initialState) {
-		this.mdp = new PowerTacMDP(this.obsIn, this.actionOut, initialState);
+	public void initialize(Observation initialState, int expectedSteps) {
+		this.mdp = new PowerTacMDP(this.obsIn, this.actionOut, initialState, expectedSteps);
 		this.dqnManager = new DQNManager(dqnSource, mdp);
 		this.dqnManager.start();
 	}
@@ -51,11 +50,11 @@ public class TariffManager {
 	private BrokerContext brokerContext;
 	private Set<PowerType> powerTypes = new HashSet<>();
 
-	public Observation observe(Integer balance, Integer subscriptions, Double storageConsumption,
-			Integer storageSubscriptions, Double productionConsumption, Integer productionSubscriptions,
-			Double consumptionConsumption, Integer consumptionSubscriptions) {
+	public Observation observe(Double balance, Double subscriptions, Double storageConsumption,
+			Double storageSubscriptions, Double productionConsumption, Double productionSubscriptions,
+			Double consumptionConsumption, Double consumptionSubscriptions, Integer timeSlot) {
 		System.out.println("MADE OBSERVATION!");
-		double[] obs = new double[8];
+		double[] obs = new double[9];
 		obs[0] = (double) balance;
 		obs[1] = (double) subscriptions;
 		obs[2] = (double) storageConsumption;
@@ -64,26 +63,35 @@ public class TariffManager {
 		obs[5] = (double) productionSubscriptions;
 		obs[6] = (double) consumptionConsumption;
 		obs[7] = (double) consumptionSubscriptions;
+		obs[8] = (double) timeSlot;
 
-		double[] changeObservation = new double[8];
+		double[] changeObservation = new double[9];
 
-		changeObservation[0] = this.previousObs[0] - obs[0];
-		changeObservation[1] = this.previousObs[1] - obs[1];
-		changeObservation[2] = this.previousObs[2] - obs[2];
-		changeObservation[3] = this.previousObs[3] - obs[3];
-		changeObservation[4] = this.previousObs[4] - obs[4];
-		changeObservation[5] = this.previousObs[5] - obs[5];
-		changeObservation[6] = this.previousObs[6] - obs[6];
-		changeObservation[7] = this.previousObs[7] - obs[7];
-
+		changeObservation[0] = obs[0] - this.previousObs[0];
+		changeObservation[1] = obs[1] - this.previousObs[1];
+		changeObservation[2] = obs[2] - this.previousObs[2];
+		changeObservation[3] = obs[3] - this.previousObs[3];
+		changeObservation[4] = obs[4] - this.previousObs[4];
+		changeObservation[5] = obs[5] - this.previousObs[5];
+		changeObservation[6] = obs[6] - this.previousObs[6];
+		changeObservation[7] = obs[7] - this.previousObs[7];
+		changeObservation[8] = obs[8];
 		this.previousObs = obs;
 
 		return ObservationGenerator.generate(changeObservation);
 
 	}
 
+	// Generates [storageConsumption; storageSubscriptions; productionConsumption;
+	// productionSubscriptions; consumptionConsumption; consumptionSubscriptions;]
+
+	private double[] generateMetricsByPowerType() {
+		double[] consumptions = new double[6];
+		return consumptions;
+	}
+
 	public List<TariffSpecification> createNewTariffs(Map<PowerType, List<TariffSpecification>> competingTariffs) {
-		// TODO Auto-generated method stub
+
 		List<TariffSpecification> initialTariffs = new ArrayList<TariffSpecification>();
 		this.competingTariffs = competingTariffs;
 		for (Map.Entry<PowerType, List<TariffSpecification>> entry : competingTariffs.entrySet()) {
@@ -139,42 +147,42 @@ public class TariffManager {
 				switch (action) {
 				case STORAGE_UP:
 					if (spec.getPowerType().isStorage()) {
-						var newSpec = this.alterStorageTariff(spec, TARIFF_CHANGE);
+						var newSpec = this.alterTariff(spec, TARIFF_CHANGE);
 						if (newSpec != null)
 							newTariffSpecs.add(new Pair<>(spec, newSpec));
 					}
 					break;
 				case STORAGE_DOWN:
 					if (spec.getPowerType().isStorage()) {
-						var newSpec = this.alterStorageTariff(spec, -TARIFF_CHANGE);
+						var newSpec = this.alterTariff(spec, -TARIFF_CHANGE);
 						if (newSpec != null)
 							newTariffSpecs.add(new Pair<>(spec, newSpec));
 					}
 					break;
 				case PRODUCTION_UP:
 					if (spec.getPowerType().isProduction()) {
-						var newSpec = this.alterProductionTariff(spec, TARIFF_CHANGE);
+						var newSpec = this.alterTariff(spec, TARIFF_CHANGE);
 						if (newSpec != null)
 							newTariffSpecs.add(new Pair<>(spec, newSpec));
 					}
 					break;
 				case PRODUCTION_DOWN:
 					if (spec.getPowerType().isProduction()) {
-						var newSpec = this.alterProductionTariff(spec, -TARIFF_CHANGE);
+						var newSpec = this.alterTariff(spec, -TARIFF_CHANGE);
 						if (newSpec != null)
 							newTariffSpecs.add(new Pair<>(spec, newSpec));
 					}
 					break;
 				case CONSUMPTION_UP:
 					if (spec.getPowerType().isConsumption()) {
-						var newSpec = this.alterConsumptionTariff(spec, TARIFF_CHANGE);
+						var newSpec = this.alterTariff(spec, TARIFF_CHANGE);
 						if (newSpec != null)
 							newTariffSpecs.add(new Pair<>(spec, newSpec));
 					}
 					break;
-				case CONSUMPTION_DONW:
+				case CONSUMPTION_DOWN:
 					if (spec.getPowerType().isConsumption()) {
-						var newSpec = this.alterConsumptionTariff(spec, -TARIFF_CHANGE);
+						var newSpec = this.alterTariff(spec, -TARIFF_CHANGE);
 						if (newSpec != null)
 							newTariffSpecs.add(new Pair<>(spec, newSpec));
 					}
@@ -194,23 +202,6 @@ public class TariffManager {
 		if (this.DEBUG)
 			System.out.flush();
 		return newTariffSpecs;
-	}
-
-	private TariffSpecification alterInterruptableTariff(TariffSpecification spec, double change) {
-		return this.alterTariff(spec, change);
-	}
-
-	private TariffSpecification alterStorageTariff(TariffSpecification spec, double change) {
-		// TODO: Add storage alteration heuristic here
-		return null;
-	}
-
-	private TariffSpecification alterProductionTariff(TariffSpecification spec, double change) {
-		return this.alterTariff(spec, -change);
-	}
-
-	private TariffSpecification alterConsumptionTariff(TariffSpecification spec, double change) {
-		return this.alterTariff(spec, change);
 	}
 
 	private void printTariffSpecificationList(PowerType powerType, List<TariffSpecification> tariffs) {
@@ -248,22 +239,15 @@ public class TariffManager {
 		return null;
 	}
 
-	private TariffSpecification alterTariff(TariffSpecification tariff, double decrease) {
+	private TariffSpecification alterTariff(TariffSpecification tariff, double alterRatio) {
 
 		TariffSpecification lowerTariff = new TariffSpecification(this.brokerContext.getBroker(),
 				tariff.getPowerType());
-		alterRates(tariff, decrease, lowerTariff);
+		alterRates(tariff, alterRatio, lowerTariff);
 		return lowerTariff;
 	}
 
-	private TariffSpecification alterTariff(TariffSpecification tariff, double decrease, Broker broker,
-			PowerType powerType) {
-		TariffSpecification lowerTariff = new TariffSpecification(broker, powerType);
-		alterRates(tariff, decrease, lowerTariff);
-		return lowerTariff;
-	}
-
-	private void alterRates(TariffSpecification tariff, double decrease, TariffSpecification lowerTariff) {
+	private void alterRates(TariffSpecification tariff, double alterRatio, TariffSpecification lowerTariff) {
 		// TODO: Heuristic to lower rates. From variable tariff create more favourable
 		// fixed rate tariff
 		List<Rate> rates = tariff.getRates();
@@ -271,16 +255,15 @@ public class TariffManager {
 			Rate alteredRate = new Rate();
 			if (rate.isFixed()) {
 				// lower fixed rates (get params from rate and add to alteredRate)
-				alteredRate.withValue(rate.getValue() * 1 - decrease);
-				if (this.DEBUG)
-					System.out.println("Fixed Rate from: " + rate.getValue() + " to: " + alteredRate.getValue());
+				alteredRate.withValue(rate.getValue() * (1 + alterRatio));
+
+				System.out.println("Fixed Rate from: " + rate.getValue() + " to: " + alteredRate.getValue());
 				// copyPeriods(rate, alteredRate);
 
 			} else {
-				alteredRate.withValue(rate.getExpectedMean() * 1 - decrease);
-				if (this.DEBUG)
-					System.out.println(
-							"Variable Rate from: " + rate.getExpectedMean() + " to: " + alteredRate.getValue());
+				alteredRate.withValue(rate.getExpectedMean() * (1 + alterRatio));
+
+				System.out.println("Variable Rate from: " + rate.getExpectedMean() + " to: " + alteredRate.getValue());
 				// copyPeriods(rate, alteredRate);
 			}
 			lowerTariff.addRate(rate);

@@ -24,7 +24,7 @@ public class DQNSource {
 			.updater(new Nesterovs(0.1, 0.9)) // High Level Configuration
 			.list() // For configuring MultiLayerNetwork we call the list method
 			.layer(0,
-					new DenseLayer.Builder().nIn(8).nOut(8).weightInit(WeightInit.XAVIER).activation(Activation.RELU)
+					new DenseLayer.Builder().nIn(9).nOut(8).weightInit(WeightInit.XAVIER).activation(Activation.RELU)
 							.build()) // Configuring Layers
 			.layer(1,
 					new DenseLayer.Builder().nIn(8).nOut(7).weightInit(WeightInit.XAVIER).activation(Activation.RELU)

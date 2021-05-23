@@ -2,7 +2,7 @@ import os
 import threading
 import time
 
-PATH_SERVER = "server-distribution-master"
+PATH_SERVER = "Server"
 
 def run_vizualizer():
     return_value = os.system("cd " + PATH_SERVER + " && mvn -Pweb2")

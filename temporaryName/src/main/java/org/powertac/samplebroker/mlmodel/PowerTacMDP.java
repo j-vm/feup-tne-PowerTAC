@@ -12,26 +12,30 @@ import org.powertac.samplebroker.tariffoptimizer.ObservationGenerator;
 
 public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 
+	private static final double TANH_REWARD_FACTOR = 4;
 	double BALANCE_WEIGHT = 0.5;
 	double SUBSCRIBER_WEIGHT = 0.5;
 
+	private int currentCustomers = 0;
+	private int expectedSteps;
 	private ObservationGenerator observationGenerator;
-	private LinkedTransferQueue<Observation> obsIn;
 
+	private LinkedTransferQueue<Observation> obsIn;
 	private LinkedTransferQueue<PowerTAC_ACTION> actionOut;
 
 	private Observation lastObs;
 
 	public enum PowerTAC_ACTION {
-		STORAGE_UP, STORAGE_DOWN, PRODUCTION_UP, PRODUCTION_DOWN, CONSUMPTION_UP, CONSUMPTION_DONW, STAY
+		STORAGE_UP, STORAGE_DOWN, PRODUCTION_UP, PRODUCTION_DOWN, CONSUMPTION_UP, CONSUMPTION_DOWN, STAY
 	}
 
 	public PowerTacMDP(LinkedTransferQueue<Observation> obsIn, LinkedTransferQueue<PowerTAC_ACTION> actionOut,
-			Observation initialState) {
+			Observation initialState, Integer expectedSteps) {
 		super();
 		this.obsIn = obsIn;
 		this.actionOut = actionOut;
 		this.lastObs = initialState;
+		this.expectedSteps = expectedSteps;
 	}
 
 	private DiscreteSpace space = new DiscreteSpace(5);
@@ -71,8 +75,15 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 		Observation obs;
 		try {
 			obs = this.obsIn.take();
-			System.out.println("[MDP] Obs In:" + obs.toString());
-			double reward = reward(lastObs, obs);
+
+			// Increment current Customers
+			this.currentCustomers += obs.getData().getInt(1);
+
+			System.out.println("[MDP] Obs In: ");
+			printObservation(obs);
+			double reward = reward(obs);
+
+			System.out.println("[MDP] Reward In: " + reward);
 			this.lastObs = obs;
 			return new StepReply<Observation>(obs, reward, isDone(), null);
 		} catch (InterruptedException e) {
@@ -88,7 +99,7 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 
 	@Override
 	public MDP<Observation, Integer, DiscreteSpace> newInstance() {
-		return new PowerTacMDP(this.obsIn, this.actionOut, this.lastObs);
+		return new PowerTacMDP(this.obsIn, this.actionOut, this.lastObs, this.expectedSteps);
 	}
 
 	@Override
@@ -96,10 +107,19 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 		return this.lastObs;
 	}
 
-	private double reward(Observation from, Observation to) {
-		int balanceDelta = to.getData().getInt(0) - from.getData().getInt(0);
-		int subscriptionDelta = to.getData().getInt(1) - from.getData().getInt(1);
-		return balanceDelta * BALANCE_WEIGHT + subscriptionDelta * SUBSCRIBER_WEIGHT;
+	private double reward(Observation to) {
+		double game_point = to.getData().getInt(8) / (double) this.expectedSteps;
+		double balance_weight = Math.tanh(game_point * PowerTacMDP.TANH_REWARD_FACTOR);
+		double subscriber_weight = 1 - balance_weight;
+		System.out.println(
+				"Expected Steps: " + this.expectedSteps + "CurrentStep: " + to.getData().getInt(8) + "GamePoint: "
+						+ game_point + "Balance Weight: " + balance_weight + "Subscriber Weight: " + subscriber_weight);
+		int balanceDelta = to.getData().getInt(0);
+		int subscriptionDelta = to.getData().getInt(1);
+		return balanceDelta * balance_weight + subscriptionDelta * subscriber_weight;
 	}
 
+	private void printObservation(Observation obs) {
+		System.out.println(obs.getData().toStringFull());
+	}
 }
