@@ -2,17 +2,15 @@ import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn import metrics
 
-class RandomForest:
-    model = RandomForestRegressor(n_estimators=400, random_state=0)
+class RandomForestClass:
+    def __init__(self):
+        self.model = RandomForestRegressor(n_estimators=400, random_state=0)
 
-    @staticmethod
-    def train(data_X, data_Y):
-        RandomForest.model.fit(data_X, data_Y)
+    def train(self, data_X, data_Y):
+        self.model.fit(data_X, data_Y)
  
-    @staticmethod
-    def predict(data):
-        prediction = RandomForest.model.predict(data)
-        return prediction
+    def predict(self, data):
+        return self.model.predict(data)
 
     @staticmethod
     def get_error(real_value, prediction_value):

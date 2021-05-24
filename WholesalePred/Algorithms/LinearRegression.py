@@ -3,17 +3,15 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn import metrics
 
-class LinearRegression:
-    model = LinearRegression()
+class LinearRegressionClass:
+    def __init__(self):
+        self.model = LinearRegression()
 
-    @staticmethod
-    def train(data_X, data_Y):
-        LinearRegression.model.fit(data_X, data_Y)
+    def train(self, data_X, data_Y):
+        self.model.fit(data_X, data_Y)
 
-    @staticmethod
-    def predict(data):
-        prediction = LinearRegression.model.predict(data)
-        return prediction
+    def predict(self, data):
+        return self.model.predict(data)
 
     @staticmethod
     def get_error(real_value, prediction_value):

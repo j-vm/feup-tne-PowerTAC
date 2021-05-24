@@ -3,8 +3,8 @@ from sklearn.model_selection import train_test_split
 import os
 from WholesalePred.Model import Model
 from sklearn.preprocessing import StandardScaler
-from WholesalePred.Algorithms.RandomForest import RandomForest as RandomForestModel
-from WholesalePred.Algorithms.LinearRegression import LinearRegression as LinearRegressionModel
+from WholesalePred.Algorithms.RandomForest import RandomForestClass
+from WholesalePred.Algorithms.LinearRegression import LinearRegressionClass
 
 def getDataset():
     # get relative path
@@ -14,7 +14,7 @@ def getDataset():
     return dataset
 
 def LinearRegression():
-    model = Model("LinearRegression", LinearRegressionModel)
+    model = Model("LinearRegression", LinearRegressionClass())
     dataset = getDataset()
     dataset1 = getDataset()
     
@@ -36,7 +36,7 @@ def LinearRegression():
     model.get_error(y_test, y_pred)
 
 def RandomForest():
-    model = Model("RandomForest", RandomForestModel)
+    model = Model("RandomForest", RandomForestClass())
     dataset = getDataset()
     dataset1 = getDataset()
 

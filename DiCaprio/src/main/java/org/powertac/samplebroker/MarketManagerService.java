@@ -172,7 +172,6 @@ implements MarketManager, Initializable, Activatable
     try {
       var clearedTrade = new HashMap<String, Object>();
       clearedTrade.put("timeslotIndex", ct.getTimeslotIndex());
-      clearedTrade.put("executionMWh", ct.getExecutionMWh());
       clearedTrade.put("executionPrice", ct.getExecutionPrice());
       clearedTrade.put("slotInDay", ct.getTimeslot().slotInDay());
       
@@ -272,7 +271,7 @@ implements MarketManager, Initializable, Activatable
       orderbookJson.put("asks", orderbook.getAsks());  // no need to send this to the models
       orderbookJson.put("bids", orderbook.getBids());  // no need to send this to the models
       orderbookJson.put("slotInDay", orderbook.getTimeslot().slotInDay());
-
+      
       pyComs.trigger(orderbookJson, PyComs.jsonType.get("orderbookJsonType"));
     }
     catch(Exception e){

@@ -95,9 +95,9 @@ public class ContextManagerService implements Initializable {
   public void handleMessage(DistributionReport dr) {
     try{
       HashMap<String,Object> hM = new HashMap<String, Object>();
-
-      hM.put("TotalConsumption", dr.getTotalConsumption());
-      hM.put("TotalProduction", dr.getTotalProduction());
+      
+      // hM.put("TotalConsumption", dr.getTotalConsumption());
+      // hM.put("TotalProduction", dr.getTotalProduction());
       hM.put("timeslotIndex", dr.getTimeslot());
 
       var energyReport = new JSONObject(hM);
