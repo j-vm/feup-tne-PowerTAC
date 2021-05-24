@@ -46,44 +46,45 @@ public class PyComs {
     );
 
     public static void trySend(Integer timeslot){
-        var listOfMaps = new ArrayList<HashMap<Integer, JSONObject>>();
-        listOfMaps.add(energyReportMap);
-        listOfMaps.add(weatherForecastJson);
-        listOfMaps.add(weatherJson);
+        var mapOfMaps = new HashMap<String, HashMap<Integer, JSONObject>>();
+        mapOfMaps.put("energyReportMap", energyReportMap);
+        mapOfMaps.put("weatherForecastJson", weatherForecastJson);
+        mapOfMaps.put("weatherJson", weatherJson);
 
-        var listOfMaps2 = new ArrayList<HashMap<Integer, ArrayList<JSONObject>>>();
-        listOfMaps2.add(clearedTradeJson);
-        listOfMaps2.add(orderbookJson);
+        var mapOfMaps2 = new HashMap<String, HashMap<Integer, ArrayList<JSONObject>>>();
+        mapOfMaps2.put("clearedTradeJson", clearedTradeJson);
+        mapOfMaps2.put("orderbookJson", orderbookJson);
 
         var shouldSend = true;
 
-        for (HashMap<Integer,JSONObject> hashMap : listOfMaps) {
-            if(hashMap.get(timeslot) == null){
+        for (Map.Entry<String, HashMap<Integer, JSONObject>> entry : mapOfMaps.entrySet()){
+            if(entry.getValue().get(timeslot) == null){
                 System.out.println("Failed");
                 shouldSend = false;
                 break;
             }
         }
-        
-        for (HashMap<Integer,ArrayList<JSONObject>> hashMap : listOfMaps2) {
-            if(hashMap.get(timeslot) == null){
+
+        for (Map.Entry<String, HashMap<Integer, ArrayList<JSONObject>>> entry : mapOfMaps2.entrySet()){
+            if(entry.getValue().get(timeslot) == null){
                 System.out.println("Failed2");
-                System.out.println(hashMap.toString());
+                System.out.println(entry.getValue().toString());
                 shouldSend = false;
-                break;
             }
         }
 
         if(shouldSend){
             var toSend = new JSONObject();
-            var value = new ArrayList<JSONObject>();
-            var value2 = new ArrayList<ArrayList<JSONObject>>();
+            var value = new HashMap<String, JSONObject>();
+            var value2 = new HashMap<String, ArrayList<JSONObject>>();
 
-            for (HashMap<Integer, JSONObject> map : listOfMaps)
-                value.add(map.get(timeslot));
+            mapOfMaps.forEach((key, val) -> {
+                value.put(key, val.get(timeslot));
+            });
 
-            for (HashMap<Integer, ArrayList<JSONObject>> map : listOfMaps2)
-                value2.add(map.get(timeslot));
+            mapOfMaps2.forEach((key, val) -> {
+                value2.put(key, val.get(timeslot));
+            });
 
             toSend.put("SampleType", "Training");
             toSend.put("noCompetitors", numberOfCompetitors);
@@ -147,8 +148,8 @@ public class PyComs {
     }
 
     public void trigger(JSONObject obj, String type){
-        String currSlot = obj.get("timeslotIndex").toString(); 
-        
+        String currSlot = obj.get("timeslotIndex").toString();
+
         switch(type){
             case "energyReportType":
                 System.out.println(mapLastIndexCleared);

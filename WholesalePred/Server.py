@@ -1,8 +1,14 @@
 from http.server import BaseHTTPRequestHandler, HTTPStatus, ThreadingHTTPServer
 import json
 
-from WholesalePred.Algorithms import LinearRegression
-from WholesalePred.Algorithms import RandomForest
+from WholesalePred.Preprocessing import Preprocessing
+
+# from WholesalePred.Algorithms.LinearRegression import LinearRegression
+# from WholesalePred.Algorithms.RandomForest import RandomForest
+
+# list_of_models = [LinearRegression, RandomForest]
+# for model in list_of_models:
+#     m = Model(model_name, model.__init__())
 
 class Server:
     class OurBaseHandler(BaseHTTPRequestHandler):
@@ -26,7 +32,7 @@ class Server:
             """)
 
             data_dict = json.loads(json_string)
-            print(data_dict)
+            Preprocessing.format_transform(data_dict)
 
             self._set_OK_response()
             self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
