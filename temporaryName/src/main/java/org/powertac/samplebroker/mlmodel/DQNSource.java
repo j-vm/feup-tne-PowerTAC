@@ -14,11 +14,14 @@ import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.rl4j.network.dqn.DQN;
+import org.deeplearning4j.rl4j.network.dqn.IDQN;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 public class DQNSource {
+
+	private String fileName = "targetQ";
 
 	private MultiLayerConfiguration multiLayerConf = new NeuralNetConfiguration.Builder().seed(123)
 			.updater(new Nesterovs(0.1, 0.9)) // High Level Configuration
@@ -49,6 +52,10 @@ public class DQNSource {
 		this.predictor.reset();
 	}
 
+	public void loadModel() {
+		this.loadModel(this.fileName);
+	}
+
 	public void loadModel(String filename) {
 		try { // constructor of File class having file as argument
 			File file = new File(filename); // creates a buffer reader input stream
@@ -67,7 +74,11 @@ public class DQNSource {
 
 	}
 
-	public void saveModel(String filename) {
+	public void saveModel(IDQN idqn) {
+		this.saveModel(this.fileName, idqn);
+	}
+
+	public void saveModel(String filename, IDQN idqn) {
 		FileOutputStream fos = null;
 		File file;
 		try {
@@ -98,6 +109,10 @@ public class DQNSource {
 		StringBuilder sb = new StringBuilder(str);
 		sb.insert(position, ch);
 		return sb.toString();
+	}
+
+	public String getFileName() {
+		return this.fileName;
 	}
 
 }

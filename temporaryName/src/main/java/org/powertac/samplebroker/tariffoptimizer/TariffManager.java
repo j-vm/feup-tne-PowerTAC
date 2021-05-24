@@ -23,6 +23,7 @@ import org.powertac.samplebroker.mlmodel.PowerTacMDP.PowerTAC_ACTION;
 
 public class TariffManager {
 	boolean DEBUG = false;
+	int REEVAL_PERIOD = 6;
 	double INITIAL_DECREASE = 0.2;
 	double TARIFF_CHANGE = 0.05;
 	private LinkedTransferQueue<Observation> obsIn = new LinkedTransferQueue<>();
@@ -31,16 +32,21 @@ public class TariffManager {
 	private DQNSource dqnSource = new DQNSource();
 	private PowerTacMDP mdp;
 	private double[] previousObs = new double[8];
+	private int expectedSteps = 0;
+	private int curSteps = 0;
+	private boolean savedDQN = false;
 
 	public TariffManager(TariffRepo tariffRepo, BrokerContext brokerContext) {
 		super();
 		this.tariffRepo = tariffRepo;
 		this.brokerContext = brokerContext;
-		this.dqnSource.createModel();
+		// this.dqnSource.createModel();
+		this.dqnSource.loadModel();
 	}
 
 	public void initialize(Observation initialState, int expectedSteps) {
 		this.mdp = new PowerTacMDP(this.obsIn, this.actionOut, initialState, expectedSteps);
+		this.expectedSteps = expectedSteps;
 		this.dqnManager = new DQNManager(dqnSource, mdp);
 		this.dqnManager.start();
 	}
@@ -53,7 +59,6 @@ public class TariffManager {
 	public Observation observe(Double balance, Double subscriptions, Double storageConsumption,
 			Double storageSubscriptions, Double productionConsumption, Double productionSubscriptions,
 			Double consumptionConsumption, Double consumptionSubscriptions, Integer timeSlot) {
-		System.out.println("MADE OBSERVATION!");
 		double[] obs = new double[9];
 		obs[0] = (double) balance;
 		obs[1] = (double) subscriptions;
@@ -96,8 +101,6 @@ public class TariffManager {
 		this.competingTariffs = competingTariffs;
 		for (Map.Entry<PowerType, List<TariffSpecification>> entry : competingTariffs.entrySet()) {
 			if (!this.powerTypes.contains(entry.getKey())) {
-				if (this.DEBUG)
-					System.out.println("Creating new Tariff: ");
 				TariffSpecification newTariff = initialTariffMutator(entry.getValue());
 				if (newTariff != null) {
 					initialTariffs.add(newTariff);
@@ -114,35 +117,18 @@ public class TariffManager {
 			List<TariffSpecification> specs, Observation obs) {
 
 		List<Pair<TariffSpecification, TariffSpecification>> newTariffSpecs = new ArrayList<Pair<TariffSpecification, TariffSpecification>>();
-		System.out.println("[TM] Altering Tariffs at timeslot: " + timeslotIndex);
+
 		if (firstAction) {
 			this.firstAction = false;
 		} else {
 			try {
 				this.obsIn.transfer(obs);
-				System.out.println("[TM] Obs in:" + obs.toString());
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-
-		if (this.DEBUG)
-			System.out.println("");
-		if (this.DEBUG)
-			System.out.println("");
-		if (this.DEBUG)
-			System.out.println("Revision Period - Time: " + timeslotIndex);
-		if (this.DEBUG)
-			System.out.println("________________________________________________");
-		if (this.DEBUG)
-			System.out.println("My tariffs:");
-		if (this.DEBUG)
-			System.out.println("");
-
 		try {
 			PowerTAC_ACTION action = this.actionOut.take();
-			System.out.println("[TM] Action Out: " + action.name());
-
 			for (TariffSpecification spec : specs) {
 				switch (action) {
 				case STORAGE_UP:
@@ -197,20 +183,16 @@ public class TariffManager {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		if (this.DEBUG)
-			System.out.println("NEWTARIFFSPEC spec: " + newTariffSpecs);
-		if (this.DEBUG)
-			System.out.flush();
-		return newTariffSpecs;
-	}
 
-	private void printTariffSpecificationList(PowerType powerType, List<TariffSpecification> tariffs) {
-		if (this.DEBUG)
-			System.out.println(powerType.toString());
-		for (TariffSpecification tariff : tariffs) {
-			if (this.DEBUG)
-				System.out.println(tariff.toString());
+		// Saving DQN
+		if (this.curSteps > this.expectedSteps && !this.savedDQN) {
+			System.out.println("SAVING DQN");
+			this.savedDQN = true;
+			this.dqnSource.saveModel(this.dqnManager.getModelTargetDQN());
 		}
+		this.curSteps += this.REEVAL_PERIOD;
+
+		return newTariffSpecs;
 	}
 
 	private TariffSpecification initialTariffMutator(List<TariffSpecification> list) {
@@ -219,20 +201,13 @@ public class TariffManager {
 		// pwithdraw,i - pwithdraw,0)
 		// selecionar o melhor da lista e não 0S (Usar tariffEvaluatorHelper)
 		if (list.get(0) != null) {
-			if (this.DEBUG)
-				System.out.println("Mutating tariff: " + list.get(0).toString());
+
 			TariffSpecification competingSpec = list.get(0);
 
 			TariffSpecification loweredSpec = alterTariff(competingSpec, INITIAL_DECREASE);
 			loweredSpec.withEarlyWithdrawPayment(0);
-			if (this.DEBUG)
-				System.out.println("Signup Payment:" + loweredSpec.getSignupPayment());
 			loweredSpec.withSignupPayment(competingSpec.getSignupPayment());
-			if (this.DEBUG)
-				System.out.println("Min Duraition:" + loweredSpec.getMinDuration());
 			loweredSpec.withMinDuration(competingSpec.getMinDuration());
-			if (this.DEBUG)
-				System.out.println("Periodic Payment:" + loweredSpec.getPeriodicPayment());
 			loweredSpec.withPeriodicPayment(competingSpec.getPeriodicPayment());
 			return loweredSpec;
 		}
@@ -257,13 +232,16 @@ public class TariffManager {
 				// lower fixed rates (get params from rate and add to alteredRate)
 				alteredRate.withValue(rate.getValue() * (1 + alterRatio));
 
-				System.out.println("Fixed Rate from: " + rate.getValue() + " to: " + alteredRate.getValue());
+				if (this.DEBUG)
+					System.out.println("Fixed Rate from: " + rate.getValue() + " to: " + alteredRate.getValue());
 				// copyPeriods(rate, alteredRate);
 
 			} else {
 				alteredRate.withValue(rate.getExpectedMean() * (1 + alterRatio));
 
-				System.out.println("Variable Rate from: " + rate.getExpectedMean() + " to: " + alteredRate.getValue());
+				if (this.DEBUG)
+					System.out.println(
+							"Variable Rate from: " + rate.getExpectedMean() + " to: " + alteredRate.getValue());
 				// copyPeriods(rate, alteredRate);
 			}
 			lowerTariff.addRate(rate);
@@ -271,17 +249,13 @@ public class TariffManager {
 	}
 
 	private void copyPeriods(Rate rate, Rate alteredRate) {
-		if (this.DEBUG)
-			System.out.println("Daily Begin:" + rate.getDailyBegin());
+
 		alteredRate.withDailyBegin(rate.getDailyBegin());
-		if (this.DEBUG)
-			System.out.println("Daily End:" + rate.getDailyBegin());
+
 		alteredRate.withDailyEnd(rate.getDailyEnd());
-		if (this.DEBUG)
-			System.out.println("hWeekly Begin:" + rate.getWeeklyBegin());
+
 		alteredRate.withWeeklyBegin(rate.getWeeklyBegin());
-		if (this.DEBUG)
-			System.out.println("Weekly End:" + rate.getWeeklyEnd());
+
 		alteredRate.withWeeklyEnd(rate.getWeeklyEnd());
 	}
 

@@ -12,12 +12,17 @@ import org.powertac.samplebroker.tariffoptimizer.ObservationGenerator;
 
 public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 
-	private static final double TANH_REWARD_FACTOR = 4;
+	private static final double TANH_REWARD_FACTOR = 2;
 	double BALANCE_WEIGHT = 0.5;
 	double SUBSCRIBER_WEIGHT = 0.5;
 
 	private int currentCustomers = 0;
 	private int expectedSteps;
+
+	public int getExpectedSteps() {
+		return expectedSteps;
+	}
+
 	private ObservationGenerator observationGenerator;
 
 	private LinkedTransferQueue<Observation> obsIn;
@@ -63,11 +68,9 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 	@Override
 	public StepReply<Observation> step(Integer action) {
 
-		System.out.println("[MDP] EXECUTIN STEP w action: " + PowerTAC_ACTION.values()[action].name());
-
 		try {
 			this.actionOut.transfer(PowerTAC_ACTION.values()[action]);
-			System.out.println("[MDP] Action out:" + action);
+			System.out.println("Action:" + action);
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -79,11 +82,8 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 			// Increment current Customers
 			this.currentCustomers += obs.getData().getInt(1);
 
-			System.out.println("[MDP] Obs In: ");
-			printObservation(obs);
 			double reward = reward(obs);
-
-			System.out.println("[MDP] Reward In: " + reward);
+			System.out.println("Reward from last action:" + reward);
 			this.lastObs = obs;
 			return new StepReply<Observation>(obs, reward, isDone(), null);
 		} catch (InterruptedException e) {
@@ -111,9 +111,6 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 		double game_point = to.getData().getInt(8) / (double) this.expectedSteps;
 		double balance_weight = Math.tanh(game_point * PowerTacMDP.TANH_REWARD_FACTOR);
 		double subscriber_weight = 1 - balance_weight;
-		System.out.println(
-				"Expected Steps: " + this.expectedSteps + "CurrentStep: " + to.getData().getInt(8) + "GamePoint: "
-						+ game_point + "Balance Weight: " + balance_weight + "Subscriber Weight: " + subscriber_weight);
 		int balanceDelta = to.getData().getInt(0);
 		int subscriptionDelta = to.getData().getInt(1);
 		return balanceDelta * balance_weight + subscriptionDelta * subscriber_weight;

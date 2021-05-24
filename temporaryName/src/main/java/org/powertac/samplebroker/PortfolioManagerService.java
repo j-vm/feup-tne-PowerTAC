@@ -146,7 +146,7 @@ public class PortfolioManagerService implements PortfolioManager, Initializable,
 		// this.EXPECTED_STEPS =
 		// this.propertiesService.getIntegerProperty("expectedTimeSlots", null) / 6;
 		// System.out.println("EXPECTED_TRAIN_STEPS: " + EXPECTED_STEPS);
-		this.EXPECTED_STEPS = 130;
+		this.EXPECTED_STEPS = 120;
 		// this.EXPECTED_STEPS = this.propertiesService.getIntegerProperty(null, null)
 	}
 
@@ -366,15 +366,10 @@ public class PortfolioManagerService implements PortfolioManager, Initializable,
 	public synchronized void activate(int timeslotIndex) {
 		if (this.baseTimeIndex == -1)
 			this.baseTimeIndex = timeslotIndex;
-		System.out.println("_____________________________");
 		System.out.println("Timeslot: " + (timeslotIndex - this.baseTimeIndex));
-		System.out.println("Collect Usage: " + this.collectUsage(timeslotIndex));
 		this.getCustomerCounts();
 
 		if (customerSubscriptions.size() == 0) {
-			if (this.DEBUG)
-				System.out.println("CREATING NEW TARIFFS");
-
 			this.tariffManager = new TariffManager(this.tariffRepo, this.brokerContext);
 			this.tariffManager.initialize(this.observeCurrentEnv(timeslotIndex), EXPECTED_STEPS);
 			createInitialTariffs();
@@ -390,25 +385,18 @@ public class PortfolioManagerService implements PortfolioManager, Initializable,
 				if (tariff.getState() != Tariff.State.WITHDRAWN) {
 					candidates.add(tariff.getTariffSpec());
 					candidateTariffs.put(tariff.getTariffSpec(), tariff);
-
-					if (this.DEBUG)
-						System.out.println("Candidate: " + tariff.getId());
 				}
 			}
 			if (null != candidates && 0 != candidates.size()) {
 				List<Pair<TariffSpecification, TariffSpecification>> alteredTariffs = this.tariffManager
 						.alterTariffs(timeslotIndex, candidates, this.observeCurrentEnv(timeslotIndex));
 
-				if (this.DEBUG)
-					System.out.println(alteredTariffs);
+				System.out.println("Superseding [" + alteredTariffs.size() + "] tariffs");
 				for (int i = 0; i < alteredTariffs.size(); i++) {
 					var spec = alteredTariffs.get(i).getSecond();
 					if (alteredTariffs.get(i) != null) {
 						var oldc = alteredTariffs.get(i).getFirst();
 
-						// adding tariff
-						System.out.println("[PMS]Superseding tariff");
-						System.out.println(oldc.toString() + " => " + spec.toString());
 						spec.addSupersedes(oldc.getId());
 						brokerContext.sendMessage(spec);
 						Tariff tariff = new Tariff(spec);
@@ -480,8 +468,6 @@ public class PortfolioManagerService implements PortfolioManager, Initializable,
 	private Observation observeCurrentEnv(int timeSlotIndex) {
 		// TODO
 		Double balance = this.brokerContext.getBroker().getCashBalance();
-		System.out.println("Broker: " + this.brokerContext.getBrokerUsername());
-		System.out.println("Broker: " + this.brokerContext.getBroker().getCashBalance());
 
 		Double subscriptions = getSubscribers();
 

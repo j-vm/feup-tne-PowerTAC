@@ -1,13 +1,10 @@
 
 package org.powertac.samplebroker.mlmodel;
 
-import org.deeplearning4j.rl4j.learning.IEpochTrainer;
-import org.deeplearning4j.rl4j.learning.ILearning;
 import org.deeplearning4j.rl4j.learning.configuration.QLearningConfiguration;
-import org.deeplearning4j.rl4j.learning.listener.TrainingListener;
 import org.deeplearning4j.rl4j.learning.sync.qlearning.discrete.QLearningDiscreteDense;
+import org.deeplearning4j.rl4j.network.dqn.IDQN;
 import org.deeplearning4j.rl4j.observation.Observation;
-import org.deeplearning4j.rl4j.util.IDataManager.StatEntry;
 
 public class DQNManager extends Thread {
 
@@ -23,51 +20,16 @@ public class DQNManager extends Thread {
 		this.source.createModel();
 		this.model = new QLearningDiscreteDense<Observation>(mdp, source.getPredictor(),
 				QLearningConfiguration.builder().batchSize(1).targetDqnUpdateFreq(50).epsilonNbStep(120).doubleDQN(true)
-						.targetDqnUpdateFreq(50).build());
-		model.addListener(new PowerTacTrainingListener());
+						.targetDqnUpdateFreq(mdp.getExpectedSteps() / 6).build());
+		model.addListener(new PowerTacTrainingListener(model, source, mdp.getExpectedSteps()));
+	}
+
+	public IDQN getModelTargetDQN() {
+		return this.model.getTargetQNetwork();
 	}
 
 	public void run() {
 		model.train();
-	}
-
-}
-
-class PowerTacTrainingListener implements TrainingListener {
-
-	private int trainingSteps = 0;
-	private double cumulativeReward = 0;
-
-	@Override
-	public ListenerResponse onTrainingStart() {
-		System.out.println("Training Started");
-		return ListenerResponse.CONTINUE;
-	}
-
-	@Override
-	public void onTrainingEnd() {
-		System.out.println("Training Ended");
-	}
-
-	@Override
-	public ListenerResponse onNewEpoch(IEpochTrainer trainer) {
-		System.out.println("New Epoch: " + trainer.getStepCount());
-		return ListenerResponse.CONTINUE;
-	}
-
-	@Override
-	public ListenerResponse onEpochTrainingResult(IEpochTrainer trainer, StatEntry statEntry) {
-		this.cumulativeReward += statEntry.getReward();
-		this.trainingSteps++;
-		System.out.println("Training Result: " + trainer.getStepCount() + " StatEntry reward: " + statEntry.getReward()
-				+ "Reward average: " + this.cumulativeReward / trainingSteps);
-		return ListenerResponse.CONTINUE;
-	}
-
-	@Override
-	public ListenerResponse onTrainingProgress(ILearning learning) {
-		System.out.println("Training Progress: " + learning.getPolicy());
-		return ListenerResponse.CONTINUE;
 	}
 
 }
