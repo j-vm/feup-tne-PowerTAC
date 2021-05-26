@@ -46,13 +46,6 @@ class PowerTacTrainingListener implements TrainingListener {
 		System.out.println("Training Result: " + trainer.getStepCount() + " StatEntry reward: " + statEntry.getReward()
 				+ " Reward average: " + this.cumulativeReward / trainingSteps);
 
-		if (this.trainingSteps == this.expectedSteps - 2) {
-
-			System.out.println("Trying to save model");
-			this.source.saveModel(this.model.getTargetQNetwork());
-		}
-
-		System.out.println("Training Progress: " + this.cumulativeReward);
 		return ListenerResponse.CONTINUE;
 	}
 

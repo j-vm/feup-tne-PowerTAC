@@ -23,6 +23,10 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 		return expectedSteps;
 	}
 
+	private double cumulativeReward;
+	private int numberOfRewards = 0;
+	private double totalReward = 0;
+
 	private ObservationGenerator observationGenerator;
 
 	private LinkedTransferQueue<Observation> obsIn;
@@ -82,8 +86,18 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 			// Increment current Customers
 			this.currentCustomers += obs.getData().getInt(1);
 
+			// Calculating reward
 			double reward = reward(obs);
+
+			// calculating cumulative reward
+			this.totalReward += reward;
+			this.numberOfRewards++;
+			this.cumulativeReward = totalReward / numberOfRewards;
+
+			// Printing reward
 			System.out.println("Reward from last action:" + reward);
+			System.out.println("Cumulative Reward:" + this.cumulativeReward);
+
 			this.lastObs = obs;
 			return new StepReply<Observation>(obs, reward, isDone(), null);
 		} catch (InterruptedException e) {

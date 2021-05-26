@@ -1,11 +1,11 @@
 
 package org.powertac.samplebroker.mlmodel;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -30,9 +30,9 @@ public class DQNSource {
 					new DenseLayer.Builder().nIn(9).nOut(8).weightInit(WeightInit.XAVIER).activation(Activation.RELU)
 							.build()) // Configuring Layers
 			.layer(1,
-					new DenseLayer.Builder().nIn(8).nOut(7).weightInit(WeightInit.XAVIER).activation(Activation.RELU)
+					new DenseLayer.Builder().nIn(8).nOut(8).weightInit(WeightInit.XAVIER).activation(Activation.RELU)
 							.build())
-			.layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.XENT).nIn(7).nOut(7)
+			.layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.XENT).nIn(8).nOut(7)
 					.weightInit(WeightInit.XAVIER).activation(Activation.SIGMOID).build())
 			.build(); // Building Configuration
 
@@ -57,16 +57,12 @@ public class DQNSource {
 	}
 
 	public void loadModel(String filename) {
+		Path currentRelativePath = Paths.get("");
+		System.out.println("Loading dqn in: "+ currentRelativePath + filename);
+		System.out.flush();
 		try { // constructor of File class having file as argument
-			File file = new File(filename); // creates a buffer reader input stream
-			BufferedReader br = new BufferedReader(new FileReader(file));
-			String model = "";
-			int r = 0, i = 0;
-			while ((r = br.read()) != -1) {
-				model = addChar(model, (char) r, i);
-				i++;
-			}
-			this.predictor = DQN.load(model);
+
+			this.predictor = DQN.load(currentRelativePath + filename);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -75,7 +71,8 @@ public class DQNSource {
 	}
 
 	public void saveModel(IDQN idqn) {
-		this.saveModel(this.fileName, idqn);
+		Path currentRelativePath = Paths.get("");
+		this.saveModel(currentRelativePath + this.fileName, idqn);
 	}
 
 	public void saveModel(String filename, IDQN idqn) {
