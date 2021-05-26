@@ -1,4 +1,5 @@
 from WholesalePred.NoPrice import NoPrice
+import csv
 
 class Preprocessing:
     @staticmethod
@@ -13,7 +14,7 @@ class Preprocessing:
         
         for k, v in data.items():
             if k == 'ListObjects':
-                if v['clearedTradeJson'][0]['executionPrice'] is None:
+                if v['clearedTradeJson'][0]['executionPrice'] == "none":
                     raise(NoPrice())
 
                 exec_price = v['clearedTradeJson'][0]['executionPrice'] 
@@ -48,6 +49,12 @@ class Preprocessing:
         temp_list.append(wind_speed)
         temp_list += weather_forecast_data
 
-        X_list.append(temp_list)
+        X_list.append(temp_list)    
+
+        with open("WholesalePred/data.csv", "a") as f:
+            for el in temp_list:
+                f.write(f"{el},")
+            f.write(f'{exec_price}\n')
+
 
         return X_list, y_list

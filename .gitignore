@@ -1,5 +1,7 @@
 server-distribution-master/log/*
 scripts/__pycache__/*
+WholesalePred/__pycache__/*
+WholesalePred/*/__pycache__/*
 *.state
 *.trace
 
