@@ -13,8 +13,7 @@ import org.powertac.samplebroker.tariffoptimizer.ObservationGenerator;
 public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 
 	private static final double TANH_REWARD_FACTOR = 2;
-	double BALANCE_WEIGHT = 0.5;
-	double SUBSCRIBER_WEIGHT = 0.5;
+
 
 	private int currentCustomers = 0;
 	private int expectedSteps;
@@ -23,9 +22,16 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 		return expectedSteps;
 	}
 
+	
 	private double cumulativeReward;
 	private int numberOfRewards = 0;
 	private double totalReward = 0;
+	
+	public double getCumulativeReward() {
+		return cumulativeReward;
+	}
+
+	
 
 	private ObservationGenerator observationGenerator;
 
@@ -35,7 +41,7 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 	private Observation lastObs;
 
 	public enum PowerTAC_ACTION {
-		STORAGE_UP, STORAGE_DOWN, PRODUCTION_UP, PRODUCTION_DOWN, CONSUMPTION_UP, CONSUMPTION_DOWN, STAY
+		STAY, STORAGE_UP, STORAGE_DOWN, PRODUCTION_UP, PRODUCTION_DOWN, CONSUMPTION_UP, CONSUMPTION_DOWN
 	}
 
 	public PowerTacMDP(LinkedTransferQueue<Observation> obsIn, LinkedTransferQueue<PowerTAC_ACTION> actionOut,
@@ -74,7 +80,7 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 
 		try {
 			this.actionOut.transfer(PowerTAC_ACTION.values()[action]);
-			System.out.println("Action:" + action);
+			System.out.println("Action:" + PowerTAC_ACTION.values()[action]);
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -85,13 +91,13 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 
 			// Increment current Customers
 			this.currentCustomers += obs.getData().getInt(1);
-
+			
 			// Calculating reward
+			this.numberOfRewards++;
 			double reward = reward(obs);
 
 			// calculating cumulative reward
 			this.totalReward += reward;
-			this.numberOfRewards++;
 			this.cumulativeReward = totalReward / numberOfRewards;
 
 			// Printing reward
@@ -122,11 +128,12 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 	}
 
 	private double reward(Observation to) {
-		double game_point = to.getData().getInt(8) / (double) this.expectedSteps;
+		double game_point = this.numberOfRewards / ((double)this.expectedSteps / 6);
 		double balance_weight = Math.tanh(game_point * PowerTacMDP.TANH_REWARD_FACTOR);
 		double subscriber_weight = 1 - balance_weight;
-		int balanceDelta = to.getData().getInt(0);
-		int subscriptionDelta = to.getData().getInt(1);
+		double balanceDelta = to.getData().getDouble(0);
+		double subscriptionDelta = to.getData().getDouble(1);
+		System.out.println("balance_weight:" + balance_weight +"balanceDelta:" +  balanceDelta + "subscriber_weight:" +  subscriber_weight + "subscriptionDelta:" + subscriptionDelta);
 		return balanceDelta * balance_weight + subscriptionDelta * subscriber_weight;
 	}
 

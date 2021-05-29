@@ -1,5 +1,9 @@
 package org.powertac.samplebroker.tariffoptimizer;
 
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -40,8 +44,6 @@ public class TariffManager {
 		super();
 		this.tariffRepo = tariffRepo;
 		this.brokerContext = brokerContext;
-		// this.dqnSource.createModel();
-		this.dqnSource.loadModel();
 	}
 
 	public void initialize(Observation initialState, int expectedSteps) {
@@ -189,6 +191,17 @@ public class TariffManager {
 			System.out.println("SAVING DQN");
 			this.savedDQN = true;
 			this.dqnSource.saveModel(this.dqnManager.getModelTargetDQN());
+			
+			try {
+				FileWriter fw = new FileWriter("output.txt", true);
+				BufferedWriter bw = new BufferedWriter(fw);
+				bw.write(Double.toString(this.mdp.getCumulativeReward()));
+				bw.newLine();
+				bw.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		this.curSteps += this.REEVAL_PERIOD;
 

@@ -123,8 +123,6 @@ public class PortfolioManagerService implements PortfolioManager, Initializable,
 	@ConfigurableValue(valueType = "Double", description = "Default daily meter charge")
 	private double defaultPeriodicPayment = -1.0;
 
-	private TariffManager tariffManager;
-
 	/**
 	 * Default constructor.
 	 */
@@ -360,21 +358,18 @@ public class PortfolioManagerService implements PortfolioManager, Initializable,
 	 */
 
 	private boolean skippedFirstImprovement = false;
-
+	private TariffManager tariffManager;
 	@Override // from Activatable
 
 	public synchronized void activate(int timeslotIndex) {
-		if (this.baseTimeIndex == -1)
+		if (this.baseTimeIndex == -1){
 			this.baseTimeIndex = timeslotIndex;
-		System.out.println("Timeslot: " + (timeslotIndex - this.baseTimeIndex));
-		this.getCustomerCounts();
-
-		if (customerSubscriptions.size() == 0) {
 			this.tariffManager = new TariffManager(this.tariffRepo, this.brokerContext);
 			this.tariffManager.initialize(this.observeCurrentEnv(timeslotIndex), EXPECTED_STEPS);
 			createInitialTariffs();
-			this.skippedFirstImprovement = false;
 		}
+		System.out.println("Timeslot: " + (timeslotIndex - this.baseTimeIndex));
+		this.getCustomerCounts();
 
 		if ((timeslotIndex - this.baseTimeIndex) % 6 == 0 && (timeslotIndex - this.baseTimeIndex) > 5) {
 

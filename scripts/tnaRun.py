@@ -1,6 +1,6 @@
 from runGame import *
 
-BOOTSRAP_FILE = "Game1" 
+BOOTSRAP_FILE = "game1" 
 AGENTS = "temporaryName,TUC_TAC"
 AGENT_INFO = {"temporaryName": ["brokers/temporaryName", "temporaryName-1.7.0.jar"],
               "TUC_TAC": ["brokers/TUC_TAC", "TUC_TAC_2020.jar"]}
