@@ -10,7 +10,7 @@ AGENT_INFO = {"temporaryName": ["brokers/temporaryName", "temporaryName-1.7.0.ja
 #run_bootstrap(BOOTSRAP_FILE)
 game = threading.Thread(target=run_game, args=(BOOTSRAP_FILE,AGENTS))
 game.start()
-threads = [threading.Thread(target=run_agent, args=(agent_name,AGENT_INFO[agent_name][0], AGENT_INFO[agent_name][1])) for agent_name in AGENT_INFO.keys()]
+threads = [threading.Thread(target=run_agent, args=(agent_name,AGENT_INFO[agent_name][0], AGENT_INFO[agent_name][1], 1)) for agent_name in AGENT_INFO.keys()]
 
 for thread in threads:
     thread.start()

@@ -1,1 +1,3 @@
 server-distribution-master/log/*
+log/*
+brokers/*

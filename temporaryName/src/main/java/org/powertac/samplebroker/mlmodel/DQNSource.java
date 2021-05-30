@@ -32,8 +32,8 @@ public class DQNSource {
 			.layer(1,
 					new DenseLayer.Builder().nIn(8).nOut(8).weightInit(WeightInit.XAVIER).activation(Activation.RELU)
 							.build())
-			.layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.XENT).nIn(8).nOut(7)
-					.weightInit(WeightInit.XAVIER).activation(Activation.SIGMOID).build())
+			.layer(new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).weightInit(WeightInit.XAVIER)
+            .activation(Activation.SOFTMAX).nIn(8).nOut(7).build())
 			.build(); // Building Configuration
 
 	private MultiLayerNetwork predictMLN = new MultiLayerNetwork(this.multiLayerConf);

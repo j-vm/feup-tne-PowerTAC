@@ -11,7 +11,7 @@ AGENTS = "TUC_TAC,temporaryName"
 AGENT_INFO = {"temporaryName": ["brokers/temporaryName", "temporaryName-1.7.0.jar"],
               "TUC_TAC": ["brokers/TUC_TAC", "TUC_TAC_2020.jar"]}
 
-SERVER_BOOT_TIME = 10
+SERVER_BOOT_TIME = 0
 
 
 def run_bootstrap(game_name):
@@ -29,7 +29,7 @@ def run_agent(agent_name, agentPath, agentJar, number_of_games):
 
 def run_game_and_agents(game_name):
     game = threading.Thread(target=run_game, args=(game_name,))
-    threads = [threading.Thread(target=run_agent, args=(agent_name,AGENT_INFO[agent_name][0], AGENT_INFO[agent_name][1])) for agent_name in AGENT_INFO.keys()]
+    threads = [threading.Thread(target=run_agent, args=(agent_name,AGENT_INFO[agent_name][0], AGENT_INFO[agent_name][1], 1)) for agent_name in AGENT_INFO.keys()]
     threads.append(game)
 
     for thread in threads:

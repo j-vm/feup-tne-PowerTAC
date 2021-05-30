@@ -39,7 +39,11 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 	private LinkedTransferQueue<PowerTAC_ACTION> actionOut;
 
 	private Observation lastObs;
+	private int[] actions = {0,0,0,0,0,0,0};
 
+	public int[] getActions(){
+		return this.actions;
+	}
 	public enum PowerTAC_ACTION {
 		STAY, STORAGE_UP, STORAGE_DOWN, PRODUCTION_UP, PRODUCTION_DOWN, CONSUMPTION_UP, CONSUMPTION_DOWN
 	}
@@ -85,6 +89,7 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		this.actions[action]++;
 		Observation obs;
 		try {
 			obs = this.obsIn.take();

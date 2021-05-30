@@ -24,7 +24,8 @@ def run_many_games(number, base_name, n_of_bootstrap):
         game.start()
         
         game.join()
-    
+        delete_logs()
+
     cleanup()
         
 def cleanup():
@@ -42,6 +43,20 @@ def cleanup():
             p.kill() # supported from python 2.6
     print('cleaned up!')
 
+import os, shutil
 
-create_many_bootstrap(3, "testingBootstrapGames")
+def delete_logs():
+    folder = './log/'
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+#create_many_bootstrap(3, "testingBootstrapGames")
 run_many_games(5, "testingBootstrapGames", 3)
+#delete_logs()

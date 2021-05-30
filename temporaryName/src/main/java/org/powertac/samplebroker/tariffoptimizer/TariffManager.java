@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedTransferQueue;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.deeplearning4j.rl4j.observation.Observation;
 import org.powertac.common.Rate;
@@ -195,7 +197,8 @@ public class TariffManager {
 			try {
 				FileWriter fw = new FileWriter("output.txt", true);
 				BufferedWriter bw = new BufferedWriter(fw);
-				bw.write(Double.toString(this.mdp.getCumulativeReward()));
+				String actions = StringUtils.join(ArrayUtils.toObject(this.mdp.getActions()), ",");
+				bw.write(Double.toString(this.mdp.getCumulativeReward()) + "," + actions);
 				bw.newLine();
 				bw.close();
 			} catch (IOException e) {
