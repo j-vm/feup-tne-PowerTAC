@@ -363,10 +363,10 @@ public class PortfolioManagerService implements PortfolioManager, Initializable,
 
 	public synchronized void activate(int timeslotIndex) {
 		if (this.baseTimeIndex == -1){
+			createInitialTariffs();
 			this.baseTimeIndex = timeslotIndex;
 			this.tariffManager = new TariffManager(this.tariffRepo, this.brokerContext);
 			this.tariffManager.initialize(this.observeCurrentEnv(timeslotIndex), EXPECTED_STEPS);
-			createInitialTariffs();
 		}
 		System.out.println("Timeslot: " + (timeslotIndex - this.baseTimeIndex));
 		this.getCustomerCounts();

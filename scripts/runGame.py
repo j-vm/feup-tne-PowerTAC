@@ -22,9 +22,9 @@ def run_game(game_name, agents = AGENTS):
     return_value = os.system("cd " + PATH_SERVER + " && mvn -Pcli -Dexec.args=\"--sim --boot-data " + game_name + " --game-id " + game_name + " --brokers " + agents + "\"")
     print(f"Run game for {game_name} thread returned {return_value}")
 
-def run_agent(agent_name, agentPath, agentJar):
+def run_agent(agent_name, agentPath, agentJar, number_of_games):
     sleep(SERVER_BOOT_TIME)
-    return_value = os.system(f"java -jar {agentPath}/{agentJar}")
+    return_value = os.system(f"java -jar {agentPath}/{agentJar} --repeat-count {str(number_of_games)}")
     print(f"{agent_name} thread returned {return_value}")
 
 def run_game_and_agents(game_name):

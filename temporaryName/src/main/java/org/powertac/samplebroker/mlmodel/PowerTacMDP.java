@@ -12,7 +12,7 @@ import org.powertac.samplebroker.tariffoptimizer.ObservationGenerator;
 
 public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 
-	private static final double TANH_REWARD_FACTOR = 2;
+	private static final double TANH_REWARD_FACTOR = 2.5;
 
 
 	private int currentCustomers = 0;
