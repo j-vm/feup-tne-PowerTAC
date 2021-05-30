@@ -12,25 +12,25 @@ def create_many_bootstrap(number, base_name):
         thread.join()
 
 def run_many_games(number, base_name, n_of_bootstrap):
-    
+
     #Start agent threads
     threads = [threading.Thread(target=run_agent, args=(agent_name,AGENT_INFO[agent_name][0], AGENT_INFO[agent_name][1], number)) for agent_name in AGENT_INFO.keys()]
 
     for thread in threads:
         thread.start()
-        
+
     for i in range(number):
         game = threading.Thread(target=run_game, args=(base_name + str(randint(0, n_of_bootstrap-1)),AGENTS))
         game.start()
-        
+
         game.join()
         delete_logs()
 
     cleanup()
-        
+
 def cleanup():
     timeout_sec = 5
-        
+
     current_process = psutil.Process()
     children = current_process.children(recursive=True)
     for p in children:
@@ -57,6 +57,6 @@ def delete_logs():
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
-#create_many_bootstrap(3, "testingBootstrapGames")
-run_many_games(5, "testingBootstrapGames", 3)
+create_many_bootstrap(10, "testRun_1_")
+run_many_games(5, "testRun_1_", 100)
 #delete_logs()
