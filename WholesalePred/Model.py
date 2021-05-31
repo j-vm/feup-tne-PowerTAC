@@ -7,7 +7,7 @@ class Model:
         self.model = model
         self.save_model()
 
-    def single_sample_train(self, data_x, data_y):
+    def sample_train(self, data_x, data_y):
         self.model = Model.load_model(self.name)
         self.train(data_x, data_y)
         self.save_model()

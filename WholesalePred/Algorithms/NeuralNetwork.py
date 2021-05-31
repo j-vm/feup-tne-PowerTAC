@@ -8,7 +8,7 @@ from numpy import vstack
 from sklearn.metrics import mean_squared_error
 
 from torchvision import transforms, datasets
-
+  
     
 class CSVDataset(torch.utils.data.Dataset):
     # load the dataset
@@ -24,14 +24,6 @@ class CSVDataset(torch.utils.data.Dataset):
     # get a row at an index
     def __getitem__(self, idx):
         return [self.X[idx], self.y[idx]]
-
-
-dataset = CSVDataset()
-
-train, test = torch.utils.data.random_split(dataset,[4000, 868])
-
-trainset = torch.utils.data.DataLoader(train, batch_size=64, shuffle=True)
-testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
 
 class Net(nn.Module):
     def __init__(self):
@@ -52,71 +44,84 @@ class Net(nn.Module):
         return F.log_softmax(x, dim=1) 
 
 
-# creation of the network
-net = Net()
 
-optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
-criterion = torch.nn.MSELoss()
+class NeuralNetworkClass:
+    def __init__(self):
+        # creation of the network
+        self.net = Net()
 
-EPOCHS = 10
-for epoch in range(EPOCHS):
-    for data in trainset:
-        X, y = data
-        X = X.float()
-        y = y.long()
+    def train_csv(self, file_path):
+        dataset = CSVDataset()
+        train, test = torch.utils.data.random_split(dataset,[4000, 868])
+        trainset = torch.utils.data.DataLoader(train, batch_size=64, shuffle=True)
+        testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
 
-        optimizer.zero_grad() 
+        optimizer = torch.optim.SGD(self.net.parameters(), lr=0.01, momentum=0.9)
+        criterion = torch.nn.MSELoss()
 
-        output = net(X) 
-        loss = criterion(output, y)
+        EPOCHS = 10
+        for epoch in range(EPOCHS):
+            for data in trainset:
+                X, y = data
+                X = X.float()
+                y = y.long()
 
-        optimizer.step()
+                optimizer.zero_grad() 
+
+                output = self.net(X) 
+                loss = criterion(output, y)
+
+                optimizer.step()
 
 
-predictions, actuals = list(), list()
+        predictions, actuals = list(), list()
 
-with torch.no_grad():
-    for data in trainset:
-        X, y = data
-        X = X.float()
-        y = y.float()
+        with torch.no_grad():
+            for data in trainset:
+                X, y = data
+                X = X.float()
+                y = y.float()
 
-        output = net(X)
-        output = output.detach().numpy()
-        
-        actual = y.numpy()
-        actual = actual.reshape((len(actual), 1))
+                output = self.net(X)
+                output = output.detach().numpy()
+                
+                actual = y.numpy()
+                actual = actual.reshape((len(actual), 1))
 
-        output = output.round()
+                output = output.round()
 
-        predictions.append(output)
-        actuals.append(actual)
+                predictions.append(output)
+                actuals.append(actual)
 
-    predictions, actuals = vstack(predictions), vstack(actuals)
-    # calculate accuracy
-    mse = mean_squared_error(actuals, predictions)
-print("Mean Squared Error:", mse)
+            predictions, actuals = vstack(predictions), vstack(actuals)
+        # calculate accuracy
+        NeuralNetworkClass.get_error(actuals, predictions)
 
-predictions, actuals = list(), list()
+        predictions, actuals = list(), list()
 
-with torch.no_grad():
-    for data in testset:
-        X, y = data
-        X = X.float()
-        y = y.float()
+        with torch.no_grad():
+            for data in testset:
+                X, y = data
+                X = X.float()
+                y = y.float()
 
-        output = net(X)
-        output = output.detach().numpy()
-        
-        actual = y.numpy()
-        actual = actual.reshape((len(actual), 1))
+                output = self.net(X)
+                output = output.detach().numpy()
+                
+                actual = y.numpy()
+                actual = actual.reshape((len(actual), 1))
 
-        output = output.round()
+                output = output.round()
 
-        predictions.append(output)
-        actuals.append(actual)
+                predictions.append(output)
+                actuals.append(actual)
 
-    predictions, actuals = vstack(predictions), vstack(actuals)
-    # calculate accuracy
-    mse = mean_squared_error(actuals, predictions)
-print("Mean Squared Error:", mse)
+            predictions, actuals = vstack(predictions), vstack(actuals)
+        # calculate accuracy
+        NeuralNetworkClass.get_error(actuals, predictions)
+
+
+    @staticmethod
+    def get_error(real_values, prediction_values):
+        mse = mean_squared_error(real_values, prediction_values)
+        print("Mean Squared Error:", mse)
