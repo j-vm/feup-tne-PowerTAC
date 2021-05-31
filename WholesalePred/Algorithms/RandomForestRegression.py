@@ -4,7 +4,7 @@ from sklearn import metrics
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-class RandomForestClass:
+class RandomForestRegressionClass:
     def __init__(self):
         self.model = RandomForestRegressor(n_estimators=400, random_state=0)
 

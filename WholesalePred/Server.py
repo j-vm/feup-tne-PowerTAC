@@ -2,15 +2,22 @@ from http.server import BaseHTTPRequestHandler, HTTPStatus, ThreadingHTTPServer
 import json
 
 from WholesalePred.Preprocessing import Preprocessing
+from WholesalePred.Preprocessing import PreprocessingClassification
 from WholesalePred.Algorithms.LinearRegression import LinearRegressionClass
-from WholesalePred.Algorithms.RandomForest import RandomForestClass
+from WholesalePred.Algorithms.RandomForestRegression import RandomForestRegressionClass
+from WholesalePred.Algorithms.RandomForestClassification import RandomForestClassificationClass
+from WholesalePred.Algorithms.NeuralNetwork import NeuralNetworkClass
 from WholesalePred.Model import Model
 from WholesalePred.NoPrice import NoPrice
 
-metadata_model = [('LinearRegression', LinearRegressionClass), ('RandomForest', RandomForestClass)]
+metadata_model = [('LinearRegression', LinearRegressionClass), ('RandomForestRegression', RandomForestRegressionClass), ('NeuralNetwork', NeuralNetworkClass)]
+metadata_model_classification = [('RandomForestClassification', RandomForestClassificationClass)]
 models = []
+models_classification = []
 for model in metadata_model:
     models.append(Model(model[0], model[1]()))
+for model_classification in metadata_model_classification:
+    models_classification.append(Model(model_classification[0], model_classification[1]()))
 
 class Server:
     class OurBaseHandler(BaseHTTPRequestHandler):
@@ -34,6 +41,11 @@ class Server:
             """)
 
             data_dict = json.loads(json_string)
+
+            # get Classification data
+            X_list_classification, y_list_classification = PreprocessingClassification.format_transform(data_dict)
+            for model_classification in models_classification :
+                model_classification.train(X_list_classification, y_list_classification)
 
             try:
                 X_list, y_list = Preprocessing.format_transform(data_dict)

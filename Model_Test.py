@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 import os
 from WholesalePred.Model import Model
 from sklearn.preprocessing import StandardScaler
-from WholesalePred.Algorithms.RandomForest import RandomForestClass
+from WholesalePred.Algorithms.RandomForestRegression import RandomForestRegressionClass
 from WholesalePred.Algorithms.LinearRegression import LinearRegressionClass
 from WholesalePred.Algorithms.NeuralNetwork import NeuralNetworkClass
 
@@ -45,8 +45,8 @@ def LinearRegression():
     y_pred = model.single_sample_predict(X_test)
     model.get_error(y_test, y_pred)
 
-def RandomForest():
-    model = Model("RandomForest", RandomForestClass())
+def RandomForestRegression():
+    model = Model("RandomForestRegression", RandomForestRegressionClass())
     dataset = getDataset()
 
     # Preparing Data For Training - geting the right columns
@@ -72,5 +72,5 @@ def NeuralNetwork():
     model.train_csv()
 
 # LinearRegression()
-# RandomForest()
+# RandomForestRegression()
 NeuralNetwork()
