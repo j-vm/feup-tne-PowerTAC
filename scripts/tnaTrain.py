@@ -1,5 +1,8 @@
 from runGame import *
 from random import randint
+import os, shutil
+import psutil
+import time
 
 AGENTS = "temporaryName,TUC_TAC"
 AGENT_INFO = {"temporaryName": ["brokers/temporaryName", "temporaryName-1.7.0.jar"],
@@ -43,7 +46,7 @@ def cleanup():
             p.kill() # supported from python 2.6
     print('cleaned up!')
 
-import os, shutil
+
 
 def delete_logs():
     folder = './log/'
@@ -58,5 +61,5 @@ def delete_logs():
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 create_many_bootstrap(10, "testRun_1_")
-run_many_games(5, "testRun_1_", 100)
+run_many_games(100, "testRun_1_", 10)
 #delete_logs()
