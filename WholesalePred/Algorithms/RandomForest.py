@@ -17,15 +17,10 @@ class RandomForestClass:
     def train_csv(self, file_path):
         dataset = pd.read_csv(file_path)
 
-        # Preparing Data For Training - geting the right columns
-        X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
+        X = dataset.iloc[:, 0:102].values
         y = dataset.iloc[:, 102].values
 
-        # Feature Scaling
-        sc = StandardScaler()
-        X = sc.fit_transform(X)
-
-        self.model.fit(X, y)
+        self.train(X, y)
 
     @staticmethod
     def get_error(real_value, prediction_value):

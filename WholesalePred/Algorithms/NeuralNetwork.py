@@ -3,23 +3,43 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from datetime import datetime
+from pandas import read_csv
+from numpy import vstack
+from sklearn.metrics import mean_squared_error
 
 from torchvision import transforms, datasets
 
-train = datasets.MNIST("", train=True, download=True, transform=transforms.Compose([transforms.ToTensor()]))
-test = datasets.MNIST("", train=False, download=True, transform=transforms.Compose([transforms.ToTensor()]))
+    
+class CSVDataset(torch.utils.data.Dataset):
+    # load the dataset
+    def __init__(self, path="WholesalePred/data.csv"):
+        # store the inputs and outputs
+        self.X = read_csv(path).iloc[:, 0:102].values
+        self.y = read_csv(path).iloc[:, 102].values
+ 
+    # number of rows in the dataset
+    def __len__(self):
+        return len(self.X)
+ 
+    # get a row at an index
+    def __getitem__(self, idx):
+        return [self.X[idx], self.y[idx]]
 
-trainset = torch.utils.data.DataLoader(train, batch_size=10, shuffle=True)
-testset = torch.utils.data.DataLoader(test, batch_size=10, shuffle=True)
+
+dataset = CSVDataset()
+
+train, test = torch.utils.data.random_split(dataset,[4000, 868])
+
+trainset = torch.utils.data.DataLoader(train, batch_size=64, shuffle=True)
+testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
 
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
-        # 28 * 28 features
-        self.fc1 = nn.Linear(28*28, 64)
+        self.fc1 = nn.Linear(102, 64)
         self.fc2 = nn.Linear(64, 64)
         self.fc3 = nn.Linear(64, 64)
-        self.fc4 = nn.Linear(64, 10)
+        self.fc4 = nn.Linear(64, 1)
 
     def forward(self, x):
         # For each layer that is not the output layer, we pass self.current_layer to an activation function
@@ -31,49 +51,72 @@ class Net(nn.Module):
         # The last layer also contains an activation function, but is usually different.
         return F.log_softmax(x, dim=1) 
 
+
 # creation of the network
 net = Net()
 
-# Implements Adam algorithm: A Method for Stochastic Optimization. 
-optimizer = optim.Adam(net.parameters(), lr = 1e-3)
+optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
+criterion = torch.nn.MSELoss()
 
-EPOCHS = 3
-d1 = datetime.now()
+EPOCHS = 10
 for epoch in range(EPOCHS):
     for data in trainset:
         X, y = data
-        net.zero_grad()  #you want to do this every time before passing data to the network
-        output = net(X.view(-1, 28**2))  #-1 in a view means that we do not know the size
-        loss = F.nll_loss(output, y) #calculating the loss over the network result
-        loss.backward()
-        optimizer.step()
-d2 = datetime.now()
-print(d2 - d1)        
-correct = 0
-total = 0
+        X = X.float()
+        y = y.long()
 
-d1 = datetime.now()
+        optimizer.zero_grad() 
+
+        output = net(X) 
+        loss = criterion(output, y)
+
+        optimizer.step()
+
+
+predictions, actuals = list(), list()
+
 with torch.no_grad():
     for data in trainset:
         X, y = data
-        output = net(X.view(-1, 28*28))
-        for idx, i in enumerate(output):
-            if torch.argmax(i) == y[idx]:
-                correct += 1
-            total += 1
-print('Accuracy:', round(correct/total, 3))
-d2 = datetime.now()
-print(d2 - d1)  
+        X = X.float()
+        y = y.float()
 
-d1 = datetime.now()
+        output = net(X)
+        output = output.detach().numpy()
+        
+        actual = y.numpy()
+        actual = actual.reshape((len(actual), 1))
+
+        output = output.round()
+
+        predictions.append(output)
+        actuals.append(actual)
+
+    predictions, actuals = vstack(predictions), vstack(actuals)
+    # calculate accuracy
+    mse = mean_squared_error(actuals, predictions)
+print("Mean Squared Error:", mse)
+
+predictions, actuals = list(), list()
+
 with torch.no_grad():
     for data in testset:
         X, y = data
-        output = net(X.view(-1, 28*28))
-        for idx, i in enumerate(output):
-            if torch.argmax(i) == y[idx]:
-                correct += 1
-            total += 1
-print('Accuracy:', round(correct/total, 3))
-d2 = datetime.now()
-print(d2 - d1)
+        X = X.float()
+        y = y.float()
+
+        output = net(X)
+        output = output.detach().numpy()
+        
+        actual = y.numpy()
+        actual = actual.reshape((len(actual), 1))
+
+        output = output.round()
+
+        predictions.append(output)
+        actuals.append(actual)
+
+    predictions, actuals = vstack(predictions), vstack(actuals)
+    # calculate accuracy
+    mse = mean_squared_error(actuals, predictions)
+print("Mean Squared Error:", mse)

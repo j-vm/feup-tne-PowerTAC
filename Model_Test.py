@@ -52,12 +52,12 @@ def RandomForest():
     X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
     y = dataset.iloc[:, 102].values
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size= 0.3, test_size=0.1, random_state=0)
 
     # Feature Scaling
-    sc = StandardScaler()
-    X_train = sc.fit_transform(X_train)
-    X_test = sc.transform(X_test)
+    # sc = StandardScaler()
+    # X_train = sc.fit_transform(X_train)
+    # X_test = sc.transform(X_test)
 
     model.single_sample_train(X_train, y_train)
     # model.single_sample_train([[9.00,3571,1976,0.5250]], [541])
@@ -66,5 +66,5 @@ def RandomForest():
     
     model.get_error(y_test,y_pred)
 
-LinearRegression()
+# LinearRegression()
 RandomForest()
