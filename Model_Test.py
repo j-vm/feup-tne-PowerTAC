@@ -5,6 +5,7 @@ from WholesalePred.Model import Model
 from sklearn.preprocessing import StandardScaler
 from WholesalePred.Algorithms.RandomForest import RandomForestClass
 from WholesalePred.Algorithms.LinearRegression import LinearRegressionClass
+from WholesalePred.Algorithms.NeuralNetwork import NeuralNetworkClass
 
 def getDataset():
     # get relative path
@@ -66,5 +67,10 @@ def RandomForest():
     
     model.get_error(y_test,y_pred)
 
+def NeuralNetwork():
+    model = Model("NeuralNetwork", NeuralNetworkClass())
+    model.train_csv()
+
 # LinearRegression()
-RandomForest()
+# RandomForest()
+NeuralNetwork()

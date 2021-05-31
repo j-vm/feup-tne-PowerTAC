@@ -49,6 +49,15 @@ class NeuralNetworkClass:
     def __init__(self):
         # creation of the network
         self.net = Net()
+        self.optimizer = torch.optim.SGD(self.net.parameters(), lr=0.01, momentum=0.9)
+        self.criterion = torch.nn.MSELoss()
+
+    def train(self, data_X, data_Y):
+        self.optimizer.zero_grad() 
+        output = self.net(data_X) 
+        loss = self.criterion(output, data_Y)
+        loss.backward()
+        self.optimizer.step()
 
     def train_csv(self, file_path):
         dataset = CSVDataset()
@@ -56,22 +65,21 @@ class NeuralNetworkClass:
         trainset = torch.utils.data.DataLoader(train, batch_size=64, shuffle=True)
         testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
 
-        optimizer = torch.optim.SGD(self.net.parameters(), lr=0.01, momentum=0.9)
-        criterion = torch.nn.MSELoss()
 
         EPOCHS = 10
         for epoch in range(EPOCHS):
             for data in trainset:
                 X, y = data
                 X = X.float()
-                y = y.long()
+                y = y.float()
 
-                optimizer.zero_grad() 
+                self.optimizer.zero_grad() 
 
                 output = self.net(X) 
-                loss = criterion(output, y)
+                loss = self.criterion(output, y)
+                loss.backward()
 
-                optimizer.step()
+                self.optimizer.step()
 
 
         predictions, actuals = list(), list()
