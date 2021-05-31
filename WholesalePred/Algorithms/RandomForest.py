@@ -1,6 +1,8 @@
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn import metrics
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
 
 class RandomForestClass:
     def __init__(self):
@@ -11,6 +13,19 @@ class RandomForestClass:
  
     def predict(self, data):
         return self.model.predict(data)
+
+    def train_csv(self, file_path):
+        dataset = pd.read_csv(file_path)
+
+        # Preparing Data For Training - geting the right columns
+        X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
+        y = dataset.iloc[:, 102].values
+
+        # Feature Scaling
+        sc = StandardScaler()
+        X = sc.fit_transform(X)
+
+        self.model.fit(X, y)
 
     @staticmethod
     def get_error(real_value, prediction_value):
