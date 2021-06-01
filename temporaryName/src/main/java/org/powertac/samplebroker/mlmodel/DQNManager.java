@@ -19,7 +19,7 @@ public class DQNManager extends Thread {
 		this.mdp = mdp;
 		this.source.loadModel();
 		this.model = new QLearningDiscreteDense<Observation>(mdp, source.getPredictor(),
-				QLearningConfiguration.builder().batchSize(1).epsilonNbStep(120).doubleDQN(true)
+				QLearningConfiguration.builder().batchSize(1).epsilonNbStep(20).doubleDQN(true)
 						.targetDqnUpdateFreq((mdp.getExpectedSteps() / 6) - 2).build());
 		model.addListener(new PowerTacTrainingListener(model, source, mdp.getExpectedSteps()));
 	}
