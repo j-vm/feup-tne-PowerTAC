@@ -57,7 +57,7 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 		this.expectedSteps = expectedSteps;
 	}
 
-	private DiscreteSpace space = new DiscreteSpace(5);
+	private DiscreteSpace space = new DiscreteSpace(7);
 
 	/*
 	 * 0 - do nothing 1 - up 1x 2 - down 1x 3 - up 2x 4 - down 2x
@@ -81,8 +81,9 @@ public class PowerTacMDP implements MDP<Observation, Integer, DiscreteSpace> {
 
 	@Override
 	public StepReply<Observation> step(Integer action) {
-
+		
 		try {
+			System.out.println("Action int:" + action);
 			this.actionOut.transfer(PowerTAC_ACTION.values()[action]);
 			System.out.println("Action:" + PowerTAC_ACTION.values()[action]);
 		} catch (InterruptedException e1) {
