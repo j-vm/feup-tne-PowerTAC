@@ -4,6 +4,7 @@ import os
 from WholesalePred.Model import Model
 from sklearn.preprocessing import StandardScaler
 from WholesalePred.Algorithms.RandomForestRegression import RandomForestRegressionClass
+from WholesalePred.Algorithms.RandomForestClassification import RandomForestClassificationClass
 from WholesalePred.Algorithms.LinearRegression import LinearRegressionClass
 from WholesalePred.Algorithms.NeuralNetwork import NeuralNetworkClass
 
@@ -71,6 +72,32 @@ def NeuralNetwork():
     model = Model("NeuralNetwork", NeuralNetworkClass())
     model.train_csv()
 
+def RandomForestClassification():
+    model = Model("RandomForestClassification", RandomForestClassificationClass())
+    dir = os.path.dirname(__file__)
+    dataset = pd.read_csv(os.path.join(dir,'WholesalePred/dataClassification.csv'))
+
+
+    # Preparing Data For Training - geting the right columns
+    X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
+    y = dataset.iloc[:, 102].values
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size= 0.6, test_size=0.2, random_state=0)
+
+    # Feature Scaling
+    sc = StandardScaler()
+    X_train = sc.fit_transform(X_train)
+    X_test = sc.transform(X_test)
+
+    model.sample_train(X_train, y_train)
+    model.sample_train([[2,203,14.4,0,170,3,14.4,0.873,182,4.45,16.8,1,183,4.02,17.1,1,197,3.26,15.7,1,194,4.67,16,0.983,198,4.48,14.9,1,193,3.44,13.7,1,177,3.66,13.4,1,165,2.5,14.9,1,147,1.36,12.5,0.22,147,3.27,13.3,0.764,143,3.95,14.5,0.978,149,3.98,13.8,0.871,171,3.84,15,0.987,162,4.89,14,0.993,160,3.82,13.5,1,158,2.76,13.9,1,145,4.01,13.8,0.967,152,4.07,13,0.46,162,4.12,13.2,0.964,151,4.8,13.2,0.077,163,4.86,13.6,0.561,164,5.25,14.2,0.783,175,4.13,15.4,0,187,4.13]], [1])
+
+    y_pred = model.single_sample_predict(X_test)
+    
+    model.get_error(y_test,y_pred)
+
+
 # LinearRegression()
 # RandomForestRegression()
-NeuralNetwork()
+# NeuralNetwork()
+RandomForestClassification()

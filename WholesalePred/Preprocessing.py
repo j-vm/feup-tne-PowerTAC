@@ -19,7 +19,7 @@ class Preprocessing:
 
                 exec_price = v['clearedTradeJson'][0]['executionPrice'] 
 
-                y_list.append([exec_price])
+                y_list.append(exec_price)
 
             elif k == 'noCompetitors':
                 number_competitors = v
@@ -76,7 +76,7 @@ class PreprocessingClassification:
                 if v['clearedTradeJson'][0]['executionPrice'] == "none":
                     exec_price = 0      # No Trades happen
                 
-                y_list.append([exec_price])
+                y_list.append(exec_price)
 
             elif k == 'noCompetitors':
                 number_competitors = v
