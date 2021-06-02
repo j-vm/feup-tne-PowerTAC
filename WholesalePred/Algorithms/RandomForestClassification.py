@@ -28,6 +28,7 @@ class RandomForestClassificationClass:
 
     @staticmethod
     def get_error(real_value, prediction_value):
+        print('\nRandom Forest Classification error:')
         # Evaluating the Algorithm
         print(confusion_matrix(real_value,prediction_value))
         print(classification_report(real_value,prediction_value))

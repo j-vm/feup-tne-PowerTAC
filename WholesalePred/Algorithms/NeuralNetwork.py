@@ -131,5 +131,6 @@ class NeuralNetworkClass:
 
     @staticmethod
     def get_error(real_values, prediction_values):
+        print('\nNeural Network error:')
         mse = mean_squared_error(real_values, prediction_values)
         print("Mean Squared Error:", mse)

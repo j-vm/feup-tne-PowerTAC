@@ -10,14 +10,23 @@ from WholesalePred.Algorithms.NeuralNetwork import NeuralNetworkClass
 from WholesalePred.Model import Model
 from WholesalePred.NoPrice import NoPrice
 
-metadata_model = [('LinearRegression', LinearRegressionClass), ('RandomForestRegression', RandomForestRegressionClass), ('NeuralNetwork', NeuralNetworkClass)]
+metadata_model = [('LinearRegression', LinearRegressionClass), ('RandomForestRegression', RandomForestRegressionClass)] #, ('NeuralNetwork', NeuralNetworkClass)]
 metadata_model_classification = [('RandomForestClassification', RandomForestClassificationClass)]
 models = []
 models_classification = []
 for model in metadata_model:
     models.append(Model(model[0], model[1]()))
+
+for model in models:
+    model.train_csv('WholesalePred/data.csv')
+
 for model_classification in metadata_model_classification:
     models_classification.append(Model(model_classification[0], model_classification[1]()))
+
+for model in models_classification:
+    model.train_csv('WholesalePred/dataClassification.csv')
+
+print('Server is ready!')
 
 class Server:
     class OurBaseHandler(BaseHTTPRequestHandler):
@@ -45,12 +54,14 @@ class Server:
             # get Classification data
             X_list_classification, y_list_classification = PreprocessingClassification.format_transform(data_dict)
             for model_classification in models_classification :
-                model_classification.train(X_list_classification, y_list_classification)
+                prediction = model_classification.sample_predict(X_list_classification)
+                model_classification.get_error(y_list_classification, prediction)
 
             try:
                 X_list, y_list = Preprocessing.format_transform(data_dict)
                 for model in models:
-                    model.train(X_list, y_list)
+                    prediction = model.sample_predict(X_list)
+                    model.get_error(y_list, prediction)
 
             except NoPrice as _:
                 print("No trades happened at this timeslot")

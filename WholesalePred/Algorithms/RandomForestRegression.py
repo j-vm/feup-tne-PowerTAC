@@ -24,6 +24,7 @@ class RandomForestRegressionClass:
 
     @staticmethod
     def get_error(real_value, prediction_value):
+        print('\nRandom Forest Regression error:')
         # Evaluating the Algorithm
         print('Mean Absolute Error:', metrics.mean_absolute_error(real_value, prediction_value))
         print('Mean Squared Error:', metrics.mean_squared_error(real_value, prediction_value))

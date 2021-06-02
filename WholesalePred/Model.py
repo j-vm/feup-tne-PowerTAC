@@ -12,7 +12,7 @@ class Model:
         self.train(data_x, data_y)
         self.save_model()
     
-    def single_sample_predict(self, data):
+    def sample_predict(self, data):
         self.model = Model.load_model(self.name)
         return self.predict(data)
 
@@ -42,11 +42,10 @@ class Model:
 
         dump(self.model, file_path + '/data')
 
-    def train_csv(self):
+    def train_csv(self,file_path):
         if "train_csv" not in dir(self.model):
             raise("The model should implement train_csv method")
             
-        file_path = 'WholesalePred/data.csv'
         self.model.train_csv(file_path)
 
     @staticmethod
