@@ -21,15 +21,16 @@ class RandomForestClassificationClass:
         X = dataset.iloc[:, 0:102].values
         y = dataset.iloc[:, 102].values
 
-        sc = StandardScaler()
-        X = sc.fit_transform(X)
+        # sc = StandardScaler()
+        # X = sc.fit_transform(X)
 
         self.train(X, y)
 
     @staticmethod
     def get_error(real_value, prediction_value):
-        print('\nRandom Forest Classification error:')
+        print('\nRandom Forest Classification:')
+        print('Predicted value: ', prediction_value)
         # Evaluating the Algorithm
         print(confusion_matrix(real_value,prediction_value))
-        # print(classification_report(real_value,prediction_value))
-        print(accuracy_score(real_value, prediction_value))
+        print(classification_report(real_value,prediction_value))
+        print('accuracy:', accuracy_score(real_value, prediction_value))

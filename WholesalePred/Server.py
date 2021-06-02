@@ -23,8 +23,8 @@ for model in models:
 for model_classification in metadata_model_classification:
     models_classification.append(Model(model_classification[0], model_classification[1]()))
 
-for model in models_classification:
-    model.train_csv('WholesalePred/dataClassification.csv')
+for model_classification in models_classification:
+    model_classification.train_csv('WholesalePred/dataClassification.csv')
 
 print('Server is ready!')
 
@@ -44,25 +44,33 @@ class Server:
             post_data = self.rfile.read(content_length)
             json_string = post_data.decode('utf-8')
 
+            '''
             print(f"""POST request,
             Headers:
             {str(self.headers)}
             """)
+            '''
 
             data_dict = json.loads(json_string)
 
-            # get Classification data
-            X_list_classification, y_list_classification = PreprocessingClassification.format_transform(data_dict)
-            for model_classification in models_classification :
-                prediction = model_classification.sample_predict(X_list_classification)
-                print(prediction)
-                # model_classification.get_error(y_list_classification, prediction)
+            try:
+                # get Classification data
+                X_list_classification, y_list_classification = PreprocessingClassification.format_transform(data_dict)
+                for model_classification in models_classification :
+                    prediction = model_classification.sample_predict(X_list_classification)
+                    model_classification.get_error(y_list_classification, prediction)
+                    model_classification.sample_train(X_list_classification, y_list_classification)
+
+            except Exception:
+                print("Prediction was not binary")
+                pass
 
             try:
                 X_list, y_list = Preprocessing.format_transform(data_dict)
                 for model in models:
                     prediction = model.sample_predict(X_list)
                     model.get_error(y_list, prediction)
+                    model.sample_train(X_list, y_list)
 
             except NoPrice as _:
                 print("No trades happened at this timeslot")
