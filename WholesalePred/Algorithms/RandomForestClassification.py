@@ -31,5 +31,5 @@ class RandomForestClassificationClass:
         print('\nRandom Forest Classification error:')
         # Evaluating the Algorithm
         print(confusion_matrix(real_value,prediction_value))
-        print(classification_report(real_value,prediction_value))
+        # print(classification_report(real_value,prediction_value))
         print(accuracy_score(real_value, prediction_value))

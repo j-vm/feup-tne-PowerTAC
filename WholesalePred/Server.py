@@ -55,7 +55,8 @@ class Server:
             X_list_classification, y_list_classification = PreprocessingClassification.format_transform(data_dict)
             for model_classification in models_classification :
                 prediction = model_classification.sample_predict(X_list_classification)
-                model_classification.get_error(y_list_classification, prediction)
+                print(prediction)
+                # model_classification.get_error(y_list_classification, prediction)
 
             try:
                 X_list, y_list = Preprocessing.format_transform(data_dict)
