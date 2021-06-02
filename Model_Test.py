@@ -45,6 +45,20 @@ def LinearRegression():
 
     y_pred = model.sample_predict(X_test)
     model.get_error(y_test, y_pred)
+    
+    model.train_csv('WholesalePred/data.csv')
+
+    prediction = model.sample_predict([[2,203,6.3,1,160,6,6.6,1,164,6.25,6.5,0.998,158,5.46,6.7,1,154,5.57,7.7,1,159,4.61,7.2,1,165,5.58,8.5,1,167,6.31,8.7,1,177,6.47,8.7,1,175,6.18,9.5,1,173,6.13,9.7,1,167,5.33,9.7,1,160,6.5,11.3,1,183,8.31,12.2,1,193,7.07,12.1,1,203,7.6,11.7,1,204,6.48,11.2,1,218,7.39,12,1,219,6.68,12.1,1,223,5.71,11.1,1,201,1.56,9.8,1,206,5.42,9.7,1,215,4.7,9.3,1,226,2.6,9.6,1,237,1.54,8.7,1,234,5.62]])
+    model.get_error([18.16321023355961], prediction)
+    
+
+def LinearRegression1():
+    model = Model("LinearRegression", LinearRegressionClass())
+    model.train_csv('WholesalePred/data.csv')
+
+    prediction = model.sample_predict([[2,203,6.3,1,160,6,6.6,1,164,6.25,6.5,0.998,158,5.46,6.7,1,154,5.57,7.7,1,159,4.61,7.2,1,165,5.58,8.5,1,167,6.31,8.7,1,177,6.47,8.7,1,175,6.18,9.5,1,173,6.13,9.7,1,167,5.33,9.7,1,160,6.5,11.3,1,183,8.31,12.2,1,193,7.07,12.1,1,203,7.6,11.7,1,204,6.48,11.2,1,218,7.39,12,1,219,6.68,12.1,1,223,5.71,11.1,1,201,1.56,9.8,1,206,5.42,9.7,1,215,4.7,9.3,1,226,2.6,9.6,1,237,1.54,8.7,1,234,5.62]])    
+    print(prediction)
+    model.get_error([18.16321023355961], prediction)
 
 def RandomForestRegression():
     model = Model("RandomForestRegression", RandomForestRegressionClass())
@@ -70,9 +84,22 @@ def RandomForestRegression():
     
     model.get_error(y_test,y_pred)
 
+def RandomForestRegression1():
+    model = Model("RandomForestRegression", RandomForestRegressionClass())
+    
+    model.train_csv('WholesalePred/data.csv')
+    print('Model trained')
+
+    prediction = model.sample_predict([[2,203,6.3,1,160,6,6.6,1,164,6.25,6.5,0.998,158,5.46,6.7,1,154,5.57,7.7,1,159,4.61,7.2,1,165,5.58,8.5,1,167,6.31,8.7,1,177,6.47,8.7,1,175,6.18,9.5,1,173,6.13,9.7,1,167,5.33,9.7,1,160,6.5,11.3,1,183,8.31,12.2,1,193,7.07,12.1,1,203,7.6,11.7,1,204,6.48,11.2,1,218,7.39,12,1,219,6.68,12.1,1,223,5.71,11.1,1,201,1.56,9.8,1,206,5.42,9.7,1,215,4.7,9.3,1,226,2.6,9.6,1,237,1.54,8.7,1,234,5.62]])    
+    print(prediction)
+    model.get_error([18.16321023355961], prediction)
+
 def NeuralNetwork():
     model = Model("NeuralNetwork", NeuralNetworkClass())
-    #model.train_csv()
+    
+    model.train_csv('WholesalePred/data.csv')
+    # prediction = model.sample_predict([[2,203,6.3,1,160,6,6.6,1,164,6.25,6.5,0.998,158,5.46,6.7,1,154,5.57,7.7,1,159,4.61,7.2,1,165,5.58,8.5,1,167,6.31,8.7,1,177,6.47,8.7,1,175,6.18,9.5,1,173,6.13,9.7,1,167,5.33,9.7,1,160,6.5,11.3,1,183,8.31,12.2,1,193,7.07,12.1,1,203,7.6,11.7,1,204,6.48,11.2,1,218,7.39,12,1,219,6.68,12.1,1,223,5.71,11.1,1,201,1.56,9.8,1,206,5.42,9.7,1,215,4.7,9.3,1,226,2.6,9.6,1,237,1.54,8.7,1,234,5.62]])    
+    # model.get_error([18.16321023355961], prediction)
     model.sample_train([[2,203,6.2,1,160,7,6.4,1,164,5.25,6.4,0.998,168,6.46,6.6,1,154,5.57,7.3,1,159,5.61,7,1,155,4.58,8,1,167,6.31,8.4,1,167,6.47,8.4,1,175,6.18,8.9,1,173,6.13,9.7,1,167,6.33,9.7,1,170,5.5,10.9,1,163,6.31,11.8,1,183,8.07,12.1,1,193,6.6,11.5,1,204,7.48,11.3,1,208,6.39,12,1,219,7.68,12,1,223,6.71,11.8,1,221,5.56,10.7,1,196,1.42,10,1,205,5.7,9.5,1,216,4.6,9.7,1,227,2.54,9.7,1,234,1.62]],[18.16321023355961])
 
 def RandomForestClassification():
@@ -100,7 +127,12 @@ def RandomForestClassification():
     model.get_error(y_test,y_pred)
 
 
-#LinearRegression()
-RandomForestRegression()
+# LinearRegression()
+# LinearRegression1()
+# RandomForestRegression()
+# RandomForestRegression1()
 # RandomForestClassification()
-# NeuralNetwork()
+NeuralNetwork()
+
+
+

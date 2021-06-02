@@ -45,8 +45,10 @@ class Model:
     def train_csv(self,file_path):
         if "train_csv" not in dir(self.model):
             raise("The model should implement train_csv method")
-            
+        
+        self.model = Model.load_model(self.name)
         self.model.train_csv(file_path)
+        self.save_model()
 
     @staticmethod
     def load_model(model_name):

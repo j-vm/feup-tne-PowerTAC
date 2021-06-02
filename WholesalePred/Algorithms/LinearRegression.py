@@ -9,7 +9,7 @@ class LinearRegressionClass:
         self.model = LinearRegression()
 
     def train(self, data_X, data_Y):
-        self.model.fit(data_X, [data_Y])
+        self.model.fit(data_X, data_Y)
 
     def predict(self, data):
         return self.model.predict(data)
@@ -34,7 +34,7 @@ class LinearRegressionClass:
                     'windSpeed0']]
         y = dataset['clearingPrice']
 
-        self.model.fit(X, y)
+        self.train(X, y)
 
 
     @staticmethod

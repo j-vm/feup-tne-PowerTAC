@@ -60,7 +60,7 @@ class NeuralNetworkClass:
         self.optimizer.step()
 
     def train_csv(self, file_path):
-        dataset = CSVDataset()
+        dataset = CSVDataset(file_path)
         train, test = torch.utils.data.random_split(dataset,[4000, 868])
         trainset = torch.utils.data.DataLoader(train, batch_size=64, shuffle=True)
         testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
