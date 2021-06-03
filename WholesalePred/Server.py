@@ -60,6 +60,7 @@ class Server:
                 for model_classification in models_classification :
                     prediction = model_classification.sample_predict(X_list_classification)
                     model_classification.get_error(y_list_classification, prediction)
+                    model_classification.get_total_error()
                     model_classification.sample_train(X_list_classification, y_list_classification)
 
             except Exception:
@@ -71,6 +72,7 @@ class Server:
                 for model in models:
                     prediction = model.sample_predict(X_list)
                     model.get_error(y_list, prediction)
+                    model_classification.get_total_error()
                     model.sample_train(X_list, y_list)
 
             except NoPrice as _:

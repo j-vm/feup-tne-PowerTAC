@@ -30,7 +30,8 @@ class NeuralNetworkClassificationClass:
     @staticmethod
     def get_error(real_value, prediction_value):
         print('\nNeural Network Classification:')
-        print('Predicted value: ', prediction_value, '   Real value: ', real_value)
+        if(len(real_value) == 1):
+            print('Predicted value: ', prediction_value, '   Real value: ', real_value)
         # Evaluating the Algorithm
         # print(confusion_matrix(real_value,prediction_value))
         # print(classification_report(real_value,prediction_value))

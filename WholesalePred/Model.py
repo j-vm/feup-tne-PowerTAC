@@ -6,6 +6,8 @@ class Model:
         self.name = name
         self.model = model
         self.save_model()
+        self.predictions = []
+        self.real_values = []
 
     def sample_train(self, data_x, data_y):
         self.model = Model.load_model(self.name)
@@ -28,10 +30,18 @@ class Model:
 
         return self.model.predict(data)
 
+    def get_total_error(self):
+        if self.real_values is None or self.predictions is None:
+            print("real_values or self.predictions is empty")
+            return None
+        print("Total Error:")
+        return self.model.get_error(self.real_values, self.predictions)
+
     def get_error(self,real, prediction):
         if "get_error" not in dir(self.model):
             raise("The model should implement get_error method")
-
+        self.real_values.append(real)
+        self.predictions.append(prediction)
         return self.model.get_error(real, prediction)
     
     def save_model(self):
