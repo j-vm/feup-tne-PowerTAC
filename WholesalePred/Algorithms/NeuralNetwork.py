@@ -55,27 +55,26 @@ class NeuralNetworkClass:
 
     def train(self, data_X, data_Y):
         self.optimizer.zero_grad() 
-        output = self.net(data_X) 
-        loss = self.criterion(output, data_Y.view(-1, 1))
+        output = self.net(torch.tensor(data_X)) 
+        loss = self.criterion(output, torch.tensor(data_Y).view(-1, 1))
         loss.backward()
         self.optimizer.step()
 
     def predict(self, data):
         with torch.no_grad():
-                output = self.net(data)
-                output = output.detach().numpy()
-                output = output.round()
-
+            output = self.net(torch.tensor(data))
+            output = output.detach().numpy()
+            output = output.round()
+            return output
 
     def train_csv(self, file_path):
         dataset = CSVDataset(file_path)
-        train, test = torch.utils.data.random_split(dataset, dataset.get_line_list(80, 10))
-        trainset = torch.utils.data.DataLoader(train, batch_size=64, shuffle=True)
-        testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
-
+        # train, test = torch.utils.data.random_split(dataset, dataset.get_line_list(80, 10))
+        trainset = torch.utils.data.DataLoader(dataset, batch_size=64, shuffle=True)
+        # testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
 
         EPOCHS = 10
-        for epoch in range(EPOCHS):
+        for _ in range(EPOCHS):
             for data in trainset:
                 X, y = data
                 X = X.float()
@@ -88,54 +87,6 @@ class NeuralNetworkClass:
                 loss.backward()
 
                 self.optimizer.step()
-
-
-        predictions, actuals = list(), list()
-
-        with torch.no_grad():
-            for data in trainset:
-                X, y = data
-                X = X.float()
-                y = y.float()
-
-                output = self.net(X)
-                output = output.detach().numpy()
-                
-                actual = y.numpy()
-                actual = actual.reshape((len(actual), 1))
-
-                output = output.round()
-
-                predictions.append(output)
-                actuals.append(actual)
-
-            predictions, actuals = vstack(predictions), vstack(actuals)
-        # calculate accuracy
-        NeuralNetworkClass.get_error(actuals, predictions)
-
-        predictions, actuals = list(), list()
-
-        with torch.no_grad():
-            for data in testset:
-                X, y = data
-                X = X.float()
-                y = y.float()
-
-                output = self.net(X)
-                output = output.detach().numpy()
-                
-                actual = y.numpy()
-                actual = actual.reshape((len(actual), 1))
-
-                output = output.round()
-
-                predictions.append(output)
-                actuals.append(actual)
-
-            predictions, actuals = vstack(predictions), vstack(actuals)
-        # calculate accuracy
-        NeuralNetworkClass.get_error(actuals, predictions)
-
 
     @staticmethod
     def get_error(real_value, prediction_value):
