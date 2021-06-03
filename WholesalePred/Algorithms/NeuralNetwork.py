@@ -132,6 +132,7 @@ class NeuralNetworkClass:
     @staticmethod
     def get_error(real_value, prediction_value):
         print('\nNeural Network error:')
-        print('Predicted value: ', prediction_value, '   Real value: ', real_value)
+        if(len(real_value) == 1):
+            print('Predicted value: ', prediction_value, '   Real value: ', real_value)
         mse = mean_squared_error(real_value, prediction_value)
         print("Mean Squared Error:", mse)
