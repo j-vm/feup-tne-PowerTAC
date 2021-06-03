@@ -5,7 +5,7 @@ import torch.optim as optim
 from datetime import datetime
 from pandas import read_csv
 from numpy import vstack
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 from torchvision import transforms, datasets
 
@@ -28,7 +28,7 @@ class CSVDataset(torch.utils.data.Dataset):
 
 dataset = CSVDataset()
 
-train, test = torch.utils.data.random_split(dataset,[6000, 1286])
+train, test = torch.utils.data.random_split(dataset,[6000, 1495])
 
 trainset = torch.utils.data.DataLoader(train, batch_size=64, shuffle=True)
 testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
@@ -36,30 +36,25 @@ testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc1 = nn.Linear(102, 64)
-        self.fc2 = nn.Linear(64, 64)
-        self.fc3 = nn.Linear(64, 64)
-        self.fc4 = nn.Linear(64, 1)
-        self.distribution = torch.distributions.Normal
+        self.fc1 = nn.Linear(102, 32)
+        self.fc2 = nn.Linear(32, 16)
+        self.fc3 = nn.Linear(16, 8)
+        self.fc4 = nn.Linear(8, 1)
 
     def forward(self, x):
-        # For each layer that is not the output layer, we pass self.current_layer to an activation function
-        # In this case, F.relu(self.current_layer(x))
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = self.fc4(x)
-        # The last layer also contains an activation function, but is usually different.
-        return F.log_softmax(x, dim=1) 
+        return F.relu(x) 
 
 
-# creation of the network
 net = Net()
 
 optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
-criterion = torch.nn.MSELoss()
+criterion = torch.nn.L1Loss()
 
-EPOCHS = 10
+EPOCHS = 5
 for epoch in range(EPOCHS):
     for data in trainset:
         X, y = data
@@ -69,37 +64,11 @@ for epoch in range(EPOCHS):
         optimizer.zero_grad() 
 
         output = net(X) 
-        loss = criterion(output, y)
+        loss = criterion(output, y.view(-1, 1))
 
         optimizer.step()
 
-
 predictions, actuals = list(), list()
-
-with torch.no_grad():
-    for data in trainset:
-        X, y = data
-        X = X.float()
-        y = y.float()
-
-        output = net(X)
-        output = output.detach().numpy()
-        
-        actual = y.numpy()
-        actual = actual.reshape((len(actual), 1))
-
-        output = output.round()
-
-        predictions.append(output)
-        actuals.append(actual)
-
-    predictions, actuals = vstack(predictions), vstack(actuals)
-    # calculate accuracy
-    mse = mean_squared_error(actuals, predictions)
-print("Mean Squared Error:", mse)
-
-predictions, actuals = list(), list()
-
 with torch.no_grad():
     for data in testset:
         X, y = data
@@ -120,4 +89,6 @@ with torch.no_grad():
     predictions, actuals = vstack(predictions), vstack(actuals)
     # calculate accuracy
     mse = mean_squared_error(actuals, predictions)
+    mae = mean_absolute_error(actuals, predictions)
 print("Mean Squared Error:", mse)
+print("Mean Absolute Error:", mae)
