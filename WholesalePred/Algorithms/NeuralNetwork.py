@@ -30,18 +30,16 @@ class Net(nn.Module):
         super().__init__()
         self.fc1 = nn.Linear(102, 64)
         self.fc2 = nn.Linear(64, 64)
-        self.fc3 = nn.Linear(64, 64)
-        self.fc4 = nn.Linear(64, 1)
+        self.fc3 = nn.Linear(64, 1)
 
     def forward(self, x):
         # For each layer that is not the output layer, we pass self.current_layer to an activation function
         # In this case, F.relu(self.current_layer(x))
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = self.fc4(x)
+        x = self.fc3(x)
         # The last layer also contains an activation function, but is usually different.
-        return F.log_softmax(x, dim=1) 
+        return F.relu(x) 
 
 
 
@@ -55,9 +53,16 @@ class NeuralNetworkClass:
     def train(self, data_X, data_Y):
         self.optimizer.zero_grad() 
         output = self.net(data_X) 
-        loss = self.criterion(output, data_Y)
+        loss = self.criterion(output, data_Y.view(-1, 1))
         loss.backward()
         self.optimizer.step()
+
+    def predict(self, data):
+        with torch.no_grad():
+                output = self.net(data)
+                output = output.detach().numpy()
+                output = output.round()
+
 
     def train_csv(self, file_path):
         dataset = CSVDataset(file_path)
@@ -76,7 +81,7 @@ class NeuralNetworkClass:
                 self.optimizer.zero_grad() 
 
                 output = self.net(X) 
-                loss = self.criterion(output, y)
+                loss = self.criterion(output, y.view(-1,1))
                 loss.backward()
 
                 self.optimizer.step()
