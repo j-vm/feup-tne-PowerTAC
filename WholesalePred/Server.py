@@ -7,11 +7,12 @@ from WholesalePred.Algorithms.LinearRegression import LinearRegressionClass
 from WholesalePred.Algorithms.RandomForestRegression import RandomForestRegressionClass
 from WholesalePred.Algorithms.RandomForestClassification import RandomForestClassificationClass
 from WholesalePred.Algorithms.NeuralNetwork import NeuralNetworkClass
+from WholesalePred.Algorithms.NeuralNetworkClassification import NeuralNetworkClassificationClass
 from WholesalePred.Model import Model
 from WholesalePred.NoPrice import NoPrice
 
 metadata_model = [('LinearRegression', LinearRegressionClass), ('RandomForestRegression', RandomForestRegressionClass)] #, ('NeuralNetwork', NeuralNetworkClass)]
-metadata_model_classification = [('RandomForestClassification', RandomForestClassificationClass)]
+metadata_model_classification = [('RandomForestClassification', RandomForestClassificationClass), ('NeuralNetworkClassification',NeuralNetworkClassificationClass)]
 models = []
 models_classification = []
 for model in metadata_model:

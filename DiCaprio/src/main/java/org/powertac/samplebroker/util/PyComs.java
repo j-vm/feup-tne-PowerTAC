@@ -35,6 +35,7 @@ public class PyComs {
     public static int mapLastIndexOrderBook = 360;
     public static int numberOfCompetitors;
     public static int numberOfCustomers;
+    public static Boolean firstTime = true;
 
     public static Map<String, String> jsonType = Map.ofEntries(
         entry("energyReportType", "energyReportType"),
@@ -166,7 +167,9 @@ public class PyComs {
                     orderBooks.add(createMockOrderbook(0)); //0 is the last index
                     lastIndexOrderBook = 0;
                 }
-                trySend(Integer.parseInt(currSlot));
+                if(firstTime)
+                    firstTime = false;
+                else trySend(Integer.parseInt(currSlot));
                 break;
             case "competitionJsonType":
                 competitionJson.put(Integer.parseInt(currSlot), obj);

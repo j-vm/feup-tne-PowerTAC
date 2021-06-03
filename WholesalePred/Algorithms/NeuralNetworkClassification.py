@@ -1,13 +1,12 @@
-import numpy as npy
-from sklearn.ensemble import RandomForestRegressor
-from sklearn import metrics
 import pandas as pd
+import numpy as npy
 from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score
 
-class RandomForestClassificationClass:
+class NeuralNetworkClassificationClass:
     def __init__(self):
-        self.model = RandomForestRegressor(n_estimators=400, random_state=0)
+        self.model = MLPClassifier(hidden_layer_sizes=(10, 10, 10), max_iter=1000)
 
     def train(self, data_X, data_Y):
         self.model.fit(data_X, data_Y)
@@ -21,14 +20,16 @@ class RandomForestClassificationClass:
         X = dataset.iloc[:, 0:102].values
         y = dataset.iloc[:, 102].values
 
-        # sc = StandardScaler()
-        # X = sc.fit_transform(X)
+        scaler = StandardScaler()
+        scaler.fit(X)
 
-        self.train(X, y)
+        X_train = scaler.transform(X)
+
+        self.train(X_train, y)
 
     @staticmethod
     def get_error(real_value, prediction_value):
-        print('\nRandom Forest Classification:')
+        print('\nNeural Network Classification:')
         print('Predicted value: ', prediction_value, '   Real value: ', real_value)
         # Evaluating the Algorithm
         # print(confusion_matrix(real_value,prediction_value))

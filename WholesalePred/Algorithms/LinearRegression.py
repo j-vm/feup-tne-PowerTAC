@@ -40,7 +40,7 @@ class LinearRegressionClass:
     @staticmethod
     def get_error(real_value, prediction_value):
         print('\nLinear Regression:')
-        print('Predicted value: ', prediction_value)
+        print('Predicted value: ', prediction_value, '   Real value: ', real_value)
         # Evaluating the Algorithm
         print('Mean Absolute Error:', metrics.mean_absolute_error(real_value, prediction_value))
         print('Mean Squared Error:', metrics.mean_squared_error(real_value, prediction_value))

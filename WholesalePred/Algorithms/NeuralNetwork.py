@@ -61,7 +61,7 @@ class NeuralNetworkClass:
 
     def train_csv(self, file_path):
         dataset = CSVDataset(file_path)
-        train, test = torch.utils.data.random_split(dataset,[4000, 868])
+        train, test = torch.utils.data.random_split(dataset,[7000, 286])
         trainset = torch.utils.data.DataLoader(train, batch_size=64, shuffle=True)
         testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
 
@@ -130,7 +130,8 @@ class NeuralNetworkClass:
 
 
     @staticmethod
-    def get_error(real_values, prediction_values):
+    def get_error(real_value, prediction_value):
         print('\nNeural Network error:')
-        mse = mean_squared_error(real_values, prediction_values)
+        print('Predicted value: ', prediction_value, '   Real value: ', real_value)
+        mse = mean_squared_error(real_value, prediction_value)
         print("Mean Squared Error:", mse)
