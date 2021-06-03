@@ -11,17 +11,20 @@ from torchvision import transforms, datasets
   
     
 class CSVDataset(torch.utils.data.Dataset):
-    # load the dataset
     def __init__(self, path="WholesalePred/data.csv"):
-        # store the inputs and outputs
         self.X = read_csv(path).iloc[:, 0:102].values
         self.y = read_csv(path).iloc[:, 102].values
- 
-    # number of rows in the dataset
+    
+    def get_line_list(self, train_size, test_size):
+        if train_size + test_size != 100:
+            raise("Error in get_line_list;\nSum of the two arguments should be 100.")
+
+        var = int(len(self.y) * train_size / 100)
+        return [var, len(self.y) - var]
+
     def __len__(self):
         return len(self.X)
  
-    # get a row at an index
     def __getitem__(self, idx):
         return [self.X[idx], self.y[idx]]
 
@@ -61,7 +64,7 @@ class NeuralNetworkClass:
 
     def train_csv(self, file_path):
         dataset = CSVDataset(file_path)
-        train, test = torch.utils.data.random_split(dataset,[7000, 286])
+        train, test = torch.utils.data.random_split(dataset, dataset.get_line_list(80, 10))
         trainset = torch.utils.data.DataLoader(train, batch_size=64, shuffle=True)
         testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
 
