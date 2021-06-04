@@ -12,6 +12,8 @@ class NeuralNetworkClassificationClass:
         self.model.fit(data_X, data_Y)
  
     def predict(self, data):
+        # TODO test with and without the following line
+        # data = StandardScaler().fit(data)
         return self.model.predict(data)
 
     def train_csv(self, file_path):
@@ -33,7 +35,7 @@ class NeuralNetworkClassificationClass:
         if(len(real_value) == 1):
             print('Predicted value: ', prediction_value, '   Real value: ', real_value)
         # Evaluating the Algorithm
-        # print(confusion_matrix(real_value,prediction_value))
+        print(confusion_matrix(real_value,prediction_value))
         # print(classification_report(real_value,prediction_value))
         print('f1_score:', f1_score(real_value, prediction_value, labels=npy.unique(real_value)))
         print('accuracy:', accuracy_score(real_value, prediction_value))
