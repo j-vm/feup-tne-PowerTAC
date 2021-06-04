@@ -69,9 +69,7 @@ class NeuralNetworkClass:
 
     def train_csv(self, file_path):
         dataset = CSVDataset(file_path)
-        # train, test = torch.utils.data.random_split(dataset, dataset.get_line_list(80, 10))
         trainset = torch.utils.data.DataLoader(dataset, batch_size=64, shuffle=True)
-        # testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
 
         EPOCHS = 10
         for _ in range(EPOCHS):
