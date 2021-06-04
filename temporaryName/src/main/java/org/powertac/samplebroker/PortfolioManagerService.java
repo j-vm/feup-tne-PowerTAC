@@ -384,7 +384,7 @@ public class PortfolioManagerService implements PortfolioManager, Initializable,
 			}
 			if (null != candidates && 0 != candidates.size()) {
 				List<Pair<TariffSpecification, TariffSpecification>> alteredTariffs = this.tariffManager
-						.alterTariffs(timeslotIndex, candidates, this.observeCurrentEnv(timeslotIndex));
+						.alterTariffs(timeslotIndex, candidates, this.observeCurrentEnv(timeslotIndex), this.brokerContext.getBroker().getCashBalance(), this.getSubscribers());
 
 				System.out.println("Superseding [" + alteredTariffs.size() + "] tariffs");
 				for (int i = 0; i < alteredTariffs.size(); i++) {

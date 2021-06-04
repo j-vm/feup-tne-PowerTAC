@@ -31,7 +31,7 @@ public class TariffManager {
 	boolean DEBUG = false;
 	int REEVAL_PERIOD = 6;
 	double INITIAL_DECREASE = 0.2;
-	double TARIFF_CHANGE = 0.05;
+	double TARIFF_CHANGE = 0.1;
 	private LinkedTransferQueue<Observation> obsIn = new LinkedTransferQueue<>();
 	private LinkedTransferQueue<PowerTAC_ACTION> actionOut = new LinkedTransferQueue<>();
 	private DQNManager dqnManager;
@@ -118,7 +118,7 @@ public class TariffManager {
 	private boolean firstAction = true;
 
 	public List<Pair<TariffSpecification, TariffSpecification>> alterTariffs(int timeslotIndex,
-			List<TariffSpecification> specs, Observation obs) {
+			List<TariffSpecification> specs, Observation obs, double currentBalance, double currentSubscribers) {
 
 		List<Pair<TariffSpecification, TariffSpecification>> newTariffSpecs = new ArrayList<Pair<TariffSpecification, TariffSpecification>>();
 
@@ -198,7 +198,10 @@ public class TariffManager {
 				FileWriter fw = new FileWriter("output.txt", true);
 				BufferedWriter bw = new BufferedWriter(fw);
 				String actions = StringUtils.join(ArrayUtils.toObject(this.mdp.getActions()), ",");
-				bw.write(Double.toString(this.mdp.getCumulativeReward()) + "," + actions);
+				bw.write(Double.toString(this.mdp.getCumulativeReward()) + "," + 
+					actions + "," + 
+					String.valueOf(currentBalance) + "," + 
+					String.valueOf(currentSubscribers));
 				bw.newLine();
 				bw.close();
 			} catch (IOException e) {
