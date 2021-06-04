@@ -62,7 +62,7 @@ class NeuralNetworkClass:
 
     def predict(self, data):
         with torch.no_grad():
-            output = self.net(torch.tensor(data))
+            output = self.net(torch.tensor(data).float())
             output = output.detach().numpy()
             output = output.round()
             return output
