@@ -11,7 +11,7 @@ from torchvision import transforms, datasets
 
     
 class CSVDataset(torch.utils.data.Dataset):
-    def __init__(self, path="WholesalePred/data2.csv"):
+    def __init__(self, path="WholesalePred/data.csv"):
         self.X = read_csv(path).iloc[:, 0:102].values
         self.y = read_csv(path).iloc[:, 102].values
     
@@ -53,7 +53,7 @@ class Net(nn.Module):
 net = Net()
 
 optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
-criterion = torch.nn.MSELoss()
+criterion = torch.nn.L1Loss()
 
 EPOCHS = 10
 for epoch in range(EPOCHS):
