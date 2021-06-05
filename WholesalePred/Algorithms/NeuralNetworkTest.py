@@ -6,6 +6,7 @@ from datetime import datetime
 from pandas import read_csv
 from numpy import vstack
 from sklearn.metrics import mean_squared_error, mean_absolute_error
+import numpy as np
 
 from torchvision import transforms, datasets
 
@@ -16,10 +17,10 @@ class CSVDataset(torch.utils.data.Dataset):
         self.y = read_csv(path).iloc[:, 102].values
     
     def get_line_list(self, train_size, test_size):
-        if train_size + test_size != 100:
+        if train_size + test_size != 25121:
             raise("Error in get_line_list;\nSum of the two arguments should be 100.")
 
-        var = int(len(self.y) * train_size / 100)
+        var = int(len(self.y) * train_size / 25121)
         return [var, len(self.y) - var]
 
     def __len__(self):
@@ -31,9 +32,9 @@ class CSVDataset(torch.utils.data.Dataset):
 
 dataset = CSVDataset()
 
-train, test = torch.utils.data.random_split(dataset, dataset.get_line_list(80, 20))
+train, test = torch.utils.data.random_split(dataset, dataset.get_line_list(23097, 2024)) # 80% train, 20% test
 
-trainset = torch.utils.data.DataLoader(train, batch_size=32, shuffle=True)
+trainset = torch.utils.data.DataLoader(train, batch_size=20, shuffle=True)
 testset = torch.utils.data.DataLoader(test, batch_size=1, shuffle=False)
 
 class Net(nn.Module):
@@ -83,7 +84,7 @@ with torch.no_grad():
         actual = y.numpy()
         actual = actual.reshape((len(actual), 1))
 
-        print(f"Pred {output}, Actual {actual}")
+        # print(f"Pred {output}, Actual {actual}")
 
         predictions.append(output)
         actuals.append(actual)
@@ -91,9 +92,14 @@ with torch.no_grad():
 
     predictions, actuals = vstack(predictions), vstack(actuals)
     # calculate accuracy
-    mse = mean_squared_error(actuals, predictions)
+   
     mae = mean_absolute_error(actuals, predictions)
+    mse = mean_squared_error(actuals, predictions)
+    rmse = np.sqrt(mean_squared_error(actuals, predictions))
 
-
-print("Mean Squared Error:", mse)
+print('\nTrain_test_split')
+print('\nNeural Network Regression:')
 print("Mean Absolute Error:", mae)
+print("Mean Squared Error:", mse)
+print("Root mean Absolute Error:", rmse)
+print('\n')

@@ -3,7 +3,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn import metrics
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score
+from matplotlib import pyplot as plt
 
 class RandomForestClassificationClass:
     def __init__(self):
@@ -30,13 +30,39 @@ class RandomForestClassificationClass:
 
         self.train(X, y)
 
-    @staticmethod
-    def get_error(real_value, prediction_value):
-        print('\nRandom Forest Classification:')
-        if(len(real_value) == 1):
-            print('Predicted value: ', prediction_value, '   Real value: ', real_value)
+    def get_total_error(self, real_value, prediction_value, f1_score, accuracy, notImportant):
+        print('Random Forest Classification:')
         # Evaluating the Algorithm
-        print(confusion_matrix(real_value,prediction_value))
+
+        print(metrics.confusion_matrix(real_value,prediction_value))
         # print(classification_report(real_value,prediction_value))
-        print('f1_score:', f1_score(real_value, prediction_value, labels=npy.unique(real_value)))
-        print('accuracy:', accuracy_score(real_value, prediction_value))
+        print('f1_score:', metrics.f1_score(real_value, prediction_value, labels=npy.unique(real_value)))
+        print('accuracy:', metrics.accuracy_score(real_value, prediction_value))
+
+        '''
+        t = list(range(len(f1_score)))
+        plt.plot(t, f1_score, 'r--', t, accuracy, 'bs')
+        plt.xlabel("Time slot")
+        plt.ylabel("Errors")
+        plt.title("Random Forest Classification Error")
+        plt.savefig("WholesalePred/plots/Classification/RandomForestClassification_Error.png")  
+        '''
+
+
+    def get_error(self, real_value, prediction_value):
+        print('\nRandom Forest Classification:')
+        print('Predicted value: ', prediction_value[0], '   Real value: ', real_value[0])
+
+        # Evaluating the Algorithm
+        #print("\nConfusion matrix")
+        #print(metrics.confusion_matrix(real_value,prediction_value))
+        # print(metrics.classification_report(real_value,prediction_value))
+
+        f1_score = metrics.f1_score(real_value, prediction_value, labels=npy.unique(real_value))
+        print('f1_score:', f1_score)
+
+        accuracy_score = metrics.accuracy_score(real_value, prediction_value)
+        print('accuracy:', accuracy_score)
+
+        return f1_score, accuracy_score, 0
+        

@@ -3,6 +3,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn import metrics
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from matplotlib import pyplot as plt
 
 class RandomForestRegressionClass:
     def __init__(self):
@@ -22,12 +23,40 @@ class RandomForestRegressionClass:
 
         self.train(X, y)
 
-    @staticmethod
-    def get_error(real_value, prediction_value):
-        print('\nRandom Forest Regression:')
-        if(len(real_value) == 1):
-            print('Predicted value: ', prediction_value, '   Real value: ', real_value)
+    def get_total_error(self, real_value, prediction_value, meanAbsoluteError, meanSquaredError, rootMeanSquaredError):
+        print('Random Forest Regression:')
+        
         # Evaluating the Algorithm
+
         print('Mean Absolute Error:', metrics.mean_absolute_error(real_value, prediction_value))
         print('Mean Squared Error:', metrics.mean_squared_error(real_value, prediction_value))
         print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(real_value, prediction_value)))
+
+    
+        t = list(range(len(meanAbsoluteError)))
+
+        plt.plot(t, meanAbsoluteError, 'r--', t, rootMeanSquaredError, 'bs')
+        # plt.plot(t, meanAbsoluteError, 'r--', t, meanSquaredError, 'bs', t, rootMeanSquaredError, 'g^')
+
+        plt.xlabel("Time slot")
+        plt.ylabel("Errors")
+        plt.title("Random Forest Regression Error")
+        plt.savefig("WholesalePred/plots/Regression/RandomForestRegression_Error.png")  
+
+
+    def get_error(self, real_value, prediction_value):
+        print('\nRandom Forest Regression:')
+        print('Predicted value: ', prediction_value[0], '   Real value: ', real_value[0])
+        
+        # Evaluating the Algorithm
+
+        meanAbsoluteError = metrics.mean_absolute_error(real_value, prediction_value)
+        print('Mean Absolute Error:', meanAbsoluteError)
+
+        meanSquaredError = metrics.mean_squared_error(real_value, prediction_value)
+        print('Mean Squared Error:', meanSquaredError)
+
+        rootMeanSquaredError = np.sqrt(metrics.mean_squared_error(real_value, prediction_value))
+        print('Root Mean Squared Error:', rootMeanSquaredError)
+
+        return meanAbsoluteError, meanSquaredError, rootMeanSquaredError

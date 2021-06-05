@@ -1,8 +1,8 @@
-
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn import metrics
 import pandas as pd
+from matplotlib import pyplot as plt
 
 class LinearRegressionClass:
     def __init__(self):
@@ -36,14 +36,41 @@ class LinearRegressionClass:
 
         self.train(X, y)
 
-
-    @staticmethod
-    def get_error(real_value, prediction_value):
-        print('\nLinear Regression:')
-        if(len(real_value) == 1):
-            print('Predicted value: ', prediction_value, '   Real value: ', real_value)
+    def get_total_error(self, real_value, prediction_value, meanAbsoluteError, meanSquaredError, rootMeanSquaredError):
+        print('Linear Regression:')
+        
         # Evaluating the Algorithm
+
         print('Mean Absolute Error:', metrics.mean_absolute_error(real_value, prediction_value))
         print('Mean Squared Error:', metrics.mean_squared_error(real_value, prediction_value))
         print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(real_value, prediction_value)))
+
+        '''
+        t = list(range(len(meanAbsoluteError)))
+        
+        plt.plot(t, meanAbsoluteError, 'r--', t, rootMeanSquaredError, 'bs')
+        # plt.plot(t, meanAbsoluteError, 'r--', t, meanSquaredError, 'bs', t, rootMeanSquaredError, 'g^')
+
+        plt.xlabel("Time slot")
+        plt.ylabel("Errors")
+        plt.title("Linear Regression Error")
+        plt.savefig("WholesalePred/plots/Regression/LinearRegression_Error.png")  
+        '''
+
+    def get_error(self, real_value, prediction_value):
+        print('\nLinear Regression:')
+        print('Predicted value: ', prediction_value[0], '   Real value: ', real_value[0])
+        
+        # Evaluating the Algorithm
+
+        singleMeanAbsoluteError = metrics.mean_absolute_error(real_value, prediction_value)
+        print('Mean Absolute Error:', singleMeanAbsoluteError)
+
+        singleMeanSquaredError = metrics.mean_squared_error(real_value, prediction_value)
+        print('Mean Squared Error:', singleMeanSquaredError)
+
+        singleRootMeanSquaredError = np.sqrt(metrics.mean_squared_error(real_value, prediction_value))
+        print('Root Mean Squared Error:', singleRootMeanSquaredError)
+
+        return singleMeanAbsoluteError, singleMeanSquaredError, singleRootMeanSquaredError  
         

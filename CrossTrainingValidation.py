@@ -6,24 +6,31 @@ from sklearn.preprocessing import StandardScaler
 from WholesalePred.Algorithms.RandomForestRegression import RandomForestRegressionClass
 from WholesalePred.Algorithms.RandomForestClassification import RandomForestClassificationClass
 from WholesalePred.Algorithms.LinearRegression import LinearRegressionClass
-from WholesalePred.Algorithms.NeuralNetwork import NeuralNetworkClass
+from WholesalePred.Algorithms.NeuralNetwork import CSVDataset, Net
 from WholesalePred.Algorithms.NeuralNetworkClassification import NeuralNetworkClassificationClass
-from sklearn import preprocessing
-from sklearn.neural_network import MLPClassifier
-from sklearn.metrics import classification_report, confusion_matrix
-from sklearn import svm
 from sklearn.model_selection import KFold # import KFold
-from sklearn.model_selection import LeaveOneOut 
+from matplotlib import pyplot as plt
+import torch
+from numpy import vstack
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 import numpy as np
-from sklearn.model_selection import cross_val_score, cross_val_predict
-from sklearn import metrics
+
 
 def getDataset():
     # get relative path
     dir = os.path.dirname(__file__)
     dataset = pd.read_csv(os.path.join(dir,'WholesalePred/data.csv'))
-    dataset.head()
     return dataset
+
+def getXY(filepath):
+    dir = os.path.dirname(__file__)
+    dataset = pd.read_csv(os.path.join(dir,filepath))
+
+    # Preparing Data For Training - geting the right columns
+    X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
+    y = dataset.iloc[:, 102].values
+
+    return X, y
 
 def KFoldsCrossValidation(X, y):
     kf = KFold(n_splits=2) # Define the split - into 2 folds 
@@ -36,27 +43,18 @@ def KFoldsCrossValidation(X, y):
 
         return X_train, X_test, y_train, y_test
 
+def showPlot(y_test, predictions,name,pltName):
+    plt.scatter(y_test, predictions)
+    plt.xlabel("True Values")
+    plt.ylabel("Predictions")
+    plt.title(name)
+    # plt.show()
+    plt.savefig(pltName)  
 
 def LinearRegression():
     model = Model("LinearRegression", LinearRegressionClass())
-    dataset = getDataset()
     
-    # Preparing the Data
-    X = dataset[['number_competitors','number_customers','temperature','cloud_cover','wind_direction','wind_speed',
-                'temperature1','cloudCover1','windDirection1','windSpeed1','temperature2','cloudCover2','windDirection2',
-                'windSpeed2','temperature3','cloudCover3','windDirection3','windSpeed3','temperature4','cloudCover4','windDirection4',
-                'windSpeed4','temperature5','cloudCover5','windDirection5','windSpeed5','temperature6','cloudCover6','windDirection6',
-                'windSpeed6','temperature7','cloudCover7','windDirection7','windSpeed7','temperature8','cloudCover8','windDirection8',
-                'windSpeed8','temperature9','cloudCover9','windDirection9','windSpeed9','temperature10','cloudCover10','windDirection10',
-                'windSpeed10','temperature11','cloudCover11','windDirection11','windSpeed11','temperature12','cloudCover12','windDirection12',
-                'windSpeed12','temperature13','cloudCover13','windDirection13','windSpeed13','temperature14','cloudCover14','windDirection14',
-                'windSpeed14','temperature15','cloudCover15','windDirection15','windSpeed15','temperature16','cloudCover16','windDirection16',
-                'windSpeed16','temperature17','cloudCover17','windDirection17','windSpeed17','temperature18','cloudCover18','windDirection18',
-                'windSpeed18','temperature19','cloudCover19','windDirection19','windSpeed19','temperature20','cloudCover20','windDirection20',
-                'windSpeed20','temperature21','cloudCover21','windDirection21','windSpeed21','temperature22','cloudCover22','windDirection22',
-                'windSpeed22','temperature23','cloudCover23','windDirection23','windSpeed23','temperature0','cloudCover0','windDirection0',
-                'windSpeed0']]
-    y = dataset['clearingPrice']
+    X, y = getXY('WholesalePred/data.csv')
 
     print('\nTrain_test_split')
     X_train, X_test, y_train, y_test = train_test_split(X, y, train_size= 0.8, test_size=0.2, random_state=0)
@@ -67,18 +65,16 @@ def LinearRegression():
     # X_test = sc.transform(X_test)
 
     model.sample_train(X_train, y_train)
-
     y_pred = model.sample_predict(X_test)
     model.get_error(y_test, y_pred)
-    
+
+    showPlot(y_test, y_pred,"Linear Regression - Train_test_split", "WholesalePred/plots/Regression/LinearRegression_Train_test_split.png")
+
 def LinearRegressionKFolds():
     model = Model("LinearRegression", LinearRegressionClass())
-    dataset = getDataset()
-    
-    # Preparing Data For Training - geting the right columns
-    X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
-    y = dataset.iloc[:, 102].values
 
+    X, y = getXY('WholesalePred/data.csv')
+    
     print('\nK-Folds Cross Validation')
     X_train, X_test, y_train, y_test = KFoldsCrossValidation(X, y)
 
@@ -91,15 +87,13 @@ def LinearRegressionKFolds():
 
     y_pred = model.sample_predict(X_test)
     model.get_error(y_test, y_pred)
+    showPlot(y_test, y_pred,"Linear Regression - K-Folds Cross Validation", "WholesalePred/plots/Regression/LinearRegression_KFoldsCrossValidation.png")
 
 
 def RandomForestRegression():
     model = Model("RandomForestRegression", RandomForestRegressionClass())
-    dataset = getDataset()
 
-    # Preparing Data For Training - geting the right columns
-    X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
-    y = dataset.iloc[:, 102].values
+    X, y = getXY('WholesalePred/data.csv')
 
     print('\nTrain_test_split')
     X_train, X_test, y_train, y_test = train_test_split(X, y, train_size= 0.8, test_size=0.2, random_state=0)
@@ -113,14 +107,12 @@ def RandomForestRegression():
 
     y_pred = model.sample_predict(X_test)
     model.get_error(y_test,y_pred)
+    showPlot(y_test, y_pred,"Random Forest Regression - Train_test_split", "WholesalePred/plots/Regression/RandomForestRegression_Train_test_split.png")
 
 def RandomForestRegressionKFolds():
     model = Model("RandomForestRegression", RandomForestRegressionClass())
-    dataset = getDataset()
 
-    # Preparing Data For Training - geting the right columns
-    X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
-    y = dataset.iloc[:, 102].values
+    X, y = getXY('WholesalePred/data.csv')
 
     print('\nK-Folds Cross Validation')
     X_train, X_test, y_train, y_test = KFoldsCrossValidation(X, y)
@@ -133,59 +125,78 @@ def RandomForestRegressionKFolds():
     model.sample_train(X_train, y_train)
     y_pred = model.sample_predict(X_test)
     model.get_error(y_test,y_pred)
+    showPlot(y_test, y_pred,"Random Forest Regression - K-Folds Cross Validation", "WholesalePred/plots/Regression/RandomForestRegression_KFoldsCrossValidation.png")
 
 
 
 def NeuralNetwork():
-    model = Model("NeuralNetwork", NeuralNetworkClass())
-    dataset = getDataset()
+    dataset = CSVDataset()
 
-    # Preparing Data For Training - geting the right columns
-    X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
-    y = dataset.iloc[:, 102].values
+    train, test = torch.utils.data.random_split(dataset, dataset.get_line_list(23097, 2024)) # 80% train, 20% test
+
+    trainset = torch.utils.data.DataLoader(train, batch_size=32, shuffle=True)
+    testset = torch.utils.data.DataLoader(test, batch_size=1, shuffle=False)
+
+    net = Net()
+
+    optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
+    criterion = torch.nn.L1Loss()
+
+    EPOCHS = 10
+    for epoch in range(EPOCHS):
+        for data in trainset:
+            X, y = data
+            X = X.float()
+
+            optimizer.zero_grad() 
+
+            output = net(X)
+            
+            loss = criterion(output, y.view(-1, 1))
+
+            optimizer.step()
+            
+
+    predictions, actuals = list(), list()
+    with torch.no_grad():
+        for data in testset:
+            X, y = data
+            X = X.float()
+            
+            output = net(X)
+            
+            output = output.detach().numpy()
+
+            actual = y.numpy()
+            actual = actual.reshape((len(actual), 1))
+
+            # print(f"Pred {output}, Actual {actual}")
+
+            predictions.append(output)
+            actuals.append(actual)
+            
+
+        predictions, actuals = vstack(predictions), vstack(actuals)
+        # calculate accuracy
+    
+        mae = mean_absolute_error(actuals, predictions)
+        mse = mean_squared_error(actuals, predictions)
+        rmse = np.sqrt(mean_squared_error(actuals, predictions))
+
 
     print('\nTrain_test_split')
-    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size= 0.8, test_size=0.2, random_state=0)
+    print('\nNeural Network Regression:')
+    print("Mean Absolute Error:", mae)
+    print("Mean Squared Error:", mse)
+    print("Root mean Absolute Error:", rmse)
+    print('\n')
 
-    # Feature Scaling
-    sc = StandardScaler()
-    X_train = sc.fit_transform(X_train)
-    X_test = sc.transform(X_test)
-
-    model.sample_train(X_train, y_train)
-    
-    y_pred = model.sample_predict(X_test)
-    model.get_error(y_test,y_pred)   
-
-def NeuralNetworkKFolds():
-    model = Model("NeuralNetwork", NeuralNetworkClass())
-    dataset = getDataset()
-
-    # Preparing Data For Training - geting the right columns
-    X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
-    y = dataset.iloc[:, 102].values
-
-    print('\nK-Folds Cross Validation')
-    X_train, X_test, y_train, y_test = KFoldsCrossValidation(X, y)
-
-    # Feature Scaling
-    sc = StandardScaler()
-    X_train = sc.fit_transform(X_train)
-    X_test = sc.transform(X_test)
-
-    model.sample_train(X_train, y_train)
-    
-    y_pred = model.sample_predict(X_test)
-    model.get_error(y_test,y_pred)  
+    showPlot(actuals, predictions,"Neural Network Regression - Train_test_split", "WholesalePred/plots/Regression/NeuralNetworkRegression_Train_test_split.png")
 
 def RandomForestClassification():
     model = Model("RandomForestClassification", RandomForestClassificationClass())
-    dir = os.path.dirname(__file__)
-    dataset = pd.read_csv(os.path.join(dir,'WholesalePred/dataClassification.csv'))
-
-    # Preparing Data For Training - geting the right columns
-    X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
-    y = dataset.iloc[:, 102].values
+    
+    X,y = getXY('WholesalePred/dataClassification.csv')
 
     print('\nTrain_test_split')
     X_train, X_test, y_train, y_test = train_test_split(X, y, train_size= 0.8, test_size=0.2, random_state=0)
@@ -200,14 +211,12 @@ def RandomForestClassification():
     y_pred = model.sample_predict(X_test)
     model.get_error(y_test,y_pred)
 
+    showPlot(y_test, y_pred,"Random Forest Classification - Train_test_split", "WholesalePred/plots/Classification/NeuralNetworkClassification_Train_test_split.png")
+
 def RandomForestClassificationKFolds():
     model = Model("RandomForestClassification", RandomForestClassificationClass())
-    dir = os.path.dirname(__file__)
-    dataset = pd.read_csv(os.path.join(dir,'WholesalePred/dataClassification.csv'))
-
-    # Preparing Data For Training - geting the right columns
-    X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
-    y = dataset.iloc[:, 102].values
+    
+    X,y = getXY('WholesalePred/dataClassification.csv')
 
     print('\nK-Folds Cross Validation')
     X_train, X_test, y_train, y_test = KFoldsCrossValidation(X, y)
@@ -221,15 +230,13 @@ def RandomForestClassificationKFolds():
     
     y_pred = model.sample_predict(X_test)
     model.get_error(y_test,y_pred)
+    showPlot(y_test, y_pred,"Neural Network Classification - K-Folds Cross Validation", "WholesalePred/plots/Classification/NeuralNetworkClassification_KFoldsCrossValidation.png")
+
 
 def NeuralNetworkClassification():
     model = Model("NeuralNetworkClassification", NeuralNetworkClassificationClass())
-    dir = os.path.dirname(__file__)
-    dataset = pd.read_csv(os.path.join(dir,'WholesalePred/dataClassification.csv'))
-
-    # Preparing Data For Training - geting the right columns
-    X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
-    y = dataset.iloc[:, 102].values
+    
+    X,y = getXY('WholesalePred/dataClassification.csv')
 
     print('\nTrain_test_split')
     X_train, X_test, y_train, y_test = train_test_split(X, y, train_size= 0.8, test_size=0.2, random_state=0)
@@ -244,14 +251,12 @@ def NeuralNetworkClassification():
     y_pred = model.sample_predict(X_test)
     model.get_error(y_test,y_pred)    
 
+    showPlot(y_test, y_pred,"Neural Network Classification - Train_test_split", "WholesalePred/plots/Classification/NeuralNetworkClassification_Train_test_split.png")
+
 def NeuralNetworkClassificationKFolds():
     model = Model("NeuralNetworkClassification", NeuralNetworkClassificationClass())
-    dir = os.path.dirname(__file__)
-    dataset = pd.read_csv(os.path.join(dir,'WholesalePred/dataClassification.csv'))
-
-    # Preparing Data For Training - geting the right columns
-    X = dataset.iloc[:, 0:102].values # not inclusivé [0,102[
-    y = dataset.iloc[:, 102].values
+    
+    X,y = getXY('WholesalePred/dataClassification.csv')
 
     print('\nK-Folds Cross Validation')
     X_train, X_test, y_train, y_test = KFoldsCrossValidation(X, y)
@@ -276,7 +281,6 @@ RandomForestRegression()
 RandomForestRegressionKFolds()
 
 NeuralNetwork()
-NeuralNetworkKFolds()
 
 print('\nClassification:')
 

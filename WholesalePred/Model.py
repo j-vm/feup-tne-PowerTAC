@@ -6,8 +6,11 @@ class Model:
         self.name = name
         self.model = model
         self.save_model()
-        self.predictions = []
-        self.real_values = []
+        self.predictions = list()
+        self.real_values = list()
+        self.error_metric1 = list()
+        self.error_metric2 = list()
+        self.error_metric3 = list()
 
     def get_name(self):
         return self.name
@@ -38,14 +41,18 @@ class Model:
             print("real_values or self.predictions is empty")
             return None
         print("\nTotal Error:")
-        return self.model.get_error(self.real_values, self.predictions)
+        return self.model.get_total_error(self.real_values, self.predictions, self.error_metric1, self.error_metric2, self.error_metric3)
 
     def get_error(self,real, prediction):
         if "get_error" not in dir(self.model):
             raise("The model should implement get_error method")
-        self.real_values.append(real)
-        self.predictions.append(prediction)
-        return self.model.get_error(real, prediction)
+        self.real_values.append(real[0])
+        self.predictions.append(prediction[0])
+
+        error_metric1, error_metric2, error_metric3 = self.model.get_error(real, prediction)
+        self.error_metric1.append(error_metric1)
+        self.error_metric2.append(error_metric2)
+        self.error_metric3.append(error_metric3)  
     
     def save_model(self):
         file_path = f'WholesalePred/model_data/{self.name}'
