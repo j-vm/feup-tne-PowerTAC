@@ -40,11 +40,17 @@ class NeuralNetworkClassificationClass:
         print('accuracy:', metrics.accuracy_score(real_value, prediction_value))
 
         t = list(range(len(f1_score)))
-        plt.plot(t, f1_score, 'r--', t, accuracy, 'bs')
-        plt.xlabel("Time slot")
-        plt.ylabel("Errors")
-        plt.title("Neural Network Classification Error")
-        plt.savefig("WholesalePred/plots/Classification/NeuralNetworkClassification_Error.png")  
+        if len(t) == 100 or len(t) == 150 or len(t) == 200:
+            plt.plot(t, f1_score, 'r--', t, accuracy, 'bs')
+            plt.xlabel("Time slot")
+            plt.ylabel("Score")
+            plt.title("Neural Network Classification Error")
+            if len(t) == 100:
+                plt.savefig("WholesalePred/plots/Classification/NeuralNetworkClassification_Error_100Timeslots.png")  
+            if len(t) == 150:
+                plt.savefig("WholesalePred/plots/Classification/NeuralNetworkClassification_Error_150Timeslots.png")  
+            if len(t) == 200:
+                plt.savefig("WholesalePred/plots/Classification/NeuralNetworkClassification_Error_200Timeslots.png")  
 
 
     def get_error(self, real_value, prediction_value):

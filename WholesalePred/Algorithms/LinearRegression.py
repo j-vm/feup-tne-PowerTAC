@@ -45,17 +45,22 @@ class LinearRegressionClass:
         print('Mean Squared Error:', metrics.mean_squared_error(real_value, prediction_value))
         print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(real_value, prediction_value)))
 
-        '''
         t = list(range(len(meanAbsoluteError)))
         
-        plt.plot(t, meanAbsoluteError, 'r--', t, rootMeanSquaredError, 'bs')
-        # plt.plot(t, meanAbsoluteError, 'r--', t, meanSquaredError, 'bs', t, rootMeanSquaredError, 'g^')
+        if len(t) == 100 or len(t) == 150 or len(t) == 200:
+            plt.plot(t, meanAbsoluteError, 'r--', t, rootMeanSquaredError, 'bs')
+            # plt.plot(t, meanAbsoluteError, 'r--', t, meanSquaredError, 'bs', t, rootMeanSquaredError, 'g^')
 
-        plt.xlabel("Time slot")
-        plt.ylabel("Errors")
-        plt.title("Linear Regression Error")
-        plt.savefig("WholesalePred/plots/Regression/LinearRegression_Error.png")  
-        '''
+            plt.xlabel("Time slot")
+            plt.ylabel("Errors")
+            plt.title("Linear Regression Error")
+            if len(t) == 100:
+                plt.savefig("WholesalePred/plots/Regression/LinearRegression_Error_100Timeslots.png")  
+            if len(t) == 150:
+                plt.savefig("WholesalePred/plots/Regression/LinearRegression_Error_150Timeslots.png")  
+            if len(t) == 200:
+                plt.savefig("WholesalePred/plots/Regression/LinearRegression_Error_200Timeslots.png")  
+            
 
     def get_error(self, real_value, prediction_value):
         print('\nLinear Regression:')

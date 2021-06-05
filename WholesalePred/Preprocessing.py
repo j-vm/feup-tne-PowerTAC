@@ -51,11 +51,13 @@ class Preprocessing:
 
         X_list.append(temp_list)    
 
+        '''
+        # save data process
         with open("WholesalePred/data.csv", "a") as f:
             for el in temp_list:
                 f.write(f"{el},")
             f.write(f'{exec_price}\n')
-
+        '''
 
         return X_list, y_list
 
@@ -108,10 +110,12 @@ class PreprocessingClassification:
 
         X_list.append(temp_list)    
 
+        '''
+        # save data process
         with open("WholesalePred/dataClassification.csv", "a") as f:
             for el in temp_list:
                 f.write(f"{el},")
             f.write(f'{exec_price}\n')
-
+        '''
 
         return X_list, y_list
