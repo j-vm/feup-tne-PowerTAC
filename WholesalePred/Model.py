@@ -9,6 +9,9 @@ class Model:
         self.predictions = []
         self.real_values = []
 
+    def get_name(self):
+        return self.name
+
     def sample_train(self, data_x, data_y):
         self.model = Model.load_model(self.name)
         self.train(data_x, data_y)
@@ -34,7 +37,7 @@ class Model:
         if self.real_values is None or self.predictions is None:
             print("real_values or self.predictions is empty")
             return None
-        print("Total Error:")
+        print("\nTotal Error:")
         return self.model.get_error(self.real_values, self.predictions)
 
     def get_error(self,real, prediction):
