@@ -11,7 +11,7 @@ from torchvision import transforms, datasets
 
     
 class CSVDataset(torch.utils.data.Dataset):
-    def __init__(self, path="WholesalePred/data.csv"):
+    def __init__(self, path="WholesalePred/data2.csv"):
         self.X = read_csv(path).iloc[:, 0:102].values
         self.y = read_csv(path).iloc[:, 102].values
     
@@ -83,15 +83,17 @@ with torch.no_grad():
         actual = y.numpy()
         actual = actual.reshape((len(actual), 1))
 
-        # print(f"Pred {output}, Actual {actual}")
+        print(f"Pred {output}, Actual {actual}")
 
         predictions.append(output)
         actuals.append(actual)
         
+
     predictions, actuals = vstack(predictions), vstack(actuals)
     # calculate accuracy
     mse = mean_squared_error(actuals, predictions)
     mae = mean_absolute_error(actuals, predictions)
+
 
 print("Mean Squared Error:", mse)
 print("Mean Absolute Error:", mae)
