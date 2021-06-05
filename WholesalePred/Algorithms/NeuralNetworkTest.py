@@ -31,67 +31,67 @@ class CSVDataset(torch.utils.data.Dataset):
 
 dataset = CSVDataset()
 
-train, test = torch.utils.data.random_split(dataset,[6000, 1495])
+train, test = torch.utils.data.random_split(dataset, dataset.get_line_list(80, 20))
 
-trainset = torch.utils.data.DataLoader(train, batch_size=64, shuffle=True)
-testset = torch.utils.data.DataLoader(test, batch_size=1024, shuffle=False)
+trainset = torch.utils.data.DataLoader(train, batch_size=32, shuffle=True)
+testset = torch.utils.data.DataLoader(test, batch_size=1, shuffle=False)
 
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc1 = nn.Linear(102, 32)
-        self.fc2 = nn.Linear(32, 16)
-        self.fc3 = nn.Linear(16, 8)
-        self.fc4 = nn.Linear(8, 1)
+        self.fc1 = nn.Linear(102, 8)
+        self.fc2 = nn.Linear(8, 16)
+        self.fc3 = nn.Linear(16, 1)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
-        x = self.fc4(x)
-        return F.relu(x) 
+        return x
 
 
 net = Net()
 
 optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
-criterion = torch.nn.L1Loss()
+criterion = torch.nn.MSELoss()
 
-EPOCHS = 5
+EPOCHS = 10
 for epoch in range(EPOCHS):
     for data in trainset:
         X, y = data
         X = X.float()
-        y = y.long()
 
         optimizer.zero_grad() 
 
-        output = net(X) 
+        output = net(X)
+        
         loss = criterion(output, y.view(-1, 1))
 
         optimizer.step()
+        
 
 predictions, actuals = list(), list()
 with torch.no_grad():
     for data in testset:
         X, y = data
         X = X.float()
-        y = y.float()
-
-        output = net(X)
-        output = output.detach().numpy()
         
+        output = net(X)
+        
+        output = output.detach().numpy()
+
         actual = y.numpy()
         actual = actual.reshape((len(actual), 1))
 
-        output = output.round()
+        # print(f"Pred {output}, Actual {actual}")
 
         predictions.append(output)
         actuals.append(actual)
-
+        
     predictions, actuals = vstack(predictions), vstack(actuals)
     # calculate accuracy
     mse = mean_squared_error(actuals, predictions)
     mae = mean_absolute_error(actuals, predictions)
+
 print("Mean Squared Error:", mse)
 print("Mean Absolute Error:", mae)
