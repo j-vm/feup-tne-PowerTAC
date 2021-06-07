@@ -11,22 +11,23 @@ from WholesalePred.Algorithms.NeuralNetworkClassification import NeuralNetworkCl
 from WholesalePred.Model import Model
 from WholesalePred.NoPrice import NoPrice
 
-metadata_model = [('LinearRegression', LinearRegressionClass), ('RandomForestRegression', RandomForestRegressionClass), ('NeuralNetworkRegression', NeuralNetworkClass)]
-metadata_model_classification = [('RandomForestClassification', RandomForestClassificationClass), ('NeuralNetworkClassification',NeuralNetworkClassificationClass)]
+metadata_model = [('RandomForestRegression', RandomForestRegressionClass), ('NeuralNetworkRegression', NeuralNetworkClass), ('LinearRegression', LinearRegressionClass)] 
+metadata_model_classification = [('NeuralNetworkClassification',NeuralNetworkClassificationClass), ('RandomForestClassification', RandomForestClassificationClass)] 
 models = []
 models_classification = []
 
 for model in metadata_model:
-    models.append(Model(model[0], model[1]()))
+    # models.append(Model(model[0], model[1]() ))
+    models.append(Model(model[0], Model.load_model(model[0])))
 
-for model in models:
-    model.train_csv('WholesalePred/data.csv')
+# for model in models:
+    # model.train_csv('WholesalePred/data.csv')
 
 for model_classification in metadata_model_classification:
-    models_classification.append(Model(model_classification[0], model_classification[1]()))
+    models_classification.append(Model(model_classification[0], Model.load_model(model_classification[0]())))
 
-for model_classification in models_classification:
-    model_classification.train_csv('WholesalePred/dataClassification.csv')
+# for model_classification in models_classification:
+    # model_classification.train_csv('WholesalePred/dataClassification.csv')
 
 print('Server is ready!')
 
