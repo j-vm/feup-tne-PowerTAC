@@ -3,6 +3,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn import metrics
 import pandas as pd
 from matplotlib import pyplot as plt
+import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
 
 class LinearRegressionClass:
     def __init__(self):
@@ -45,21 +47,21 @@ class LinearRegressionClass:
         print('Mean Squared Error:', metrics.mean_squared_error(real_value, prediction_value))
         print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(real_value, prediction_value)))
 
-        t = list(range(len(meanAbsoluteError)))
+        timeSlot = len(meanAbsoluteError)
+        t = list(range(timeSlot))
         
-        if len(t) == 100 or len(t) == 150 or len(t) == 200:
-            plt.plot(t, meanAbsoluteError, 'r--', t, rootMeanSquaredError, 'bs')
+        if timeSlot == 101 or timeSlot == 151 or timeSlot == 201 or timeSlot == 251:
+            plt.plot(t, meanAbsoluteError, 'r--', t, rootMeanSquaredError, 'b^')
             # plt.plot(t, meanAbsoluteError, 'r--', t, meanSquaredError, 'bs', t, rootMeanSquaredError, 'g^')
 
             plt.xlabel("Time slot")
             plt.ylabel("Errors")
             plt.title("Linear Regression Error")
-            if len(t) == 100:
-                plt.savefig("WholesalePred/plots/Regression/LinearRegression_Error_100Timeslots.png")  
-            if len(t) == 150:
-                plt.savefig("WholesalePred/plots/Regression/LinearRegression_Error_150Timeslots.png")  
-            if len(t) == 200:
-                plt.savefig("WholesalePred/plots/Regression/LinearRegression_Error_200Timeslots.png")  
+            red_patch = mpatches.Patch(color='red', label='Mean Absolute Error')
+            blue_line = mlines.Line2D([], [], color='blue', marker='^', markersize=15, label='Root Mean Squared Error')
+            plt.legend(handles=[red_patch,blue_line])
+            plt.savefig("WholesalePred/plots/Regression/LinearRegression_Error_" + str(timeSlot) + "Timeslots_with_legend.png")  
+
             
 
     def get_error(self, real_value, prediction_value):

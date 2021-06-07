@@ -7,6 +7,8 @@ from pandas import read_csv
 from numpy import vstack
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from matplotlib import pyplot as plt
+import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
 import numpy as np
   
     
@@ -93,16 +95,22 @@ class NeuralNetworkClass:
         print('Mean Squared Error:', mean_squared_error(real_value, prediction_value))
         print('Root Mean Squared Error:', np.sqrt(mean_squared_error(real_value, prediction_value)))
 
-        '''
-        t = list(range(len(meanAbsoluteError)))
-        plt.plot(t, meanAbsoluteError, 'r--', t, rootMeanSquaredError, 'bs')
-        # plt.plot(t, meanAbsoluteError, 'r--', t, meanSquaredError, 'bs', t, rootMeanSquaredError, 'g^')
+        timeSlot = len(meanAbsoluteError)
+        t = list(range(timeSlot))
+        
+        if timeSlot == 103 or timeSlot == 153 or timeSlot == 203 or timeSlot == 253:
+            plt.plot(t, meanAbsoluteError, 'r--', t, rootMeanSquaredError, 'b^')
+            # plt.plot(t, meanAbsoluteError, 'r--', t, meanSquaredError, 'bs', t, rootMeanSquaredError, 'g^')
 
-        plt.xlabel("Time slot")
-        plt.ylabel("Errors")
-        plt.title("Neural Network_Error")
-        plt.savefig("WholesalePred/plots/Regression/NeuralNetworkRegression_Error.png")  
-        '''
+            red_patch = mpatches.Patch(color='red', label='Mean Absolute Error')
+            blue_line = mlines.Line2D([], [], color='blue', marker='^', markersize=15, label='Root Mean Squared Error')
+            plt.legend(handles=[red_patch,blue_line])
+
+            plt.xlabel("Time slot")
+            plt.ylabel("Errors")
+            plt.title("Neural Network_Error")
+            plt.savefig("WholesalePred/plots/Regression/NeuralNetworkRegression_Error"+ str(timeSlot) + "timeslot_with_legend.png")  
+
 
     def get_error(self, real_value, prediction_value):
         print('\nNeural Network Regression:')

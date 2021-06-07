@@ -4,6 +4,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
 from sklearn import metrics
 from matplotlib import pyplot as plt
+import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
+
 
 class NeuralNetworkClassificationClass:
     def __init__(self):
@@ -39,18 +42,22 @@ class NeuralNetworkClassificationClass:
         print('f1_score:', metrics.f1_score(real_value, prediction_value, labels=npy.unique(real_value)))
         print('accuracy:', metrics.accuracy_score(real_value, prediction_value))
 
-        t = list(range(len(f1_score)))
-        if len(t) == 100 or len(t) == 150 or len(t) == 200:
-            plt.plot(t, f1_score, 'r--', t, accuracy, 'bs')
+        
+        timeSlot = len(f1_score)
+        t = list(range(timeSlot))
+        
+        if timeSlot == 100 or timeSlot == 150 or timeSlot == 200 or timeSlot == 250:
+            plt.plot(t, f1_score, 'r--', t, accuracy, 'b^')
+
+            red_patch = mpatches.Patch(color='red', label='F1 score')
+            blue_line = mlines.Line2D([], [], color='blue', marker='^', markersize=15, label='Accuracy')
+            plt.legend(handles=[red_patch,blue_line])
+
             plt.xlabel("Time slot")
             plt.ylabel("Score")
             plt.title("Neural Network Classification Error")
-            if len(t) == 100:
-                plt.savefig("WholesalePred/plots/Classification/NeuralNetworkClassification_Error_100Timeslots.png")  
-            if len(t) == 150:
-                plt.savefig("WholesalePred/plots/Classification/NeuralNetworkClassification_Error_150Timeslots.png")  
-            if len(t) == 200:
-                plt.savefig("WholesalePred/plots/Classification/NeuralNetworkClassification_Error_200Timeslots.png")  
+            plt.savefig("WholesalePred/plots/Classification/NeuralNetworkClassification_Error_" + str(timeSlot) + "Timeslots_with_legend.png")  
+
 
 
     def get_error(self, real_value, prediction_value):

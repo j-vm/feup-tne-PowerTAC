@@ -33,9 +33,9 @@ def getXY(filepath):
     return X, y
 
 def KFoldsCrossValidation(X, y):
-    kf = KFold(n_splits=2) # Define the split - into 2 folds 
+    kf = KFold(n_splits=5) # Define the split - into 2 folds 
     kf.get_n_splits(X) # returns the number of splitting iterations in the cross-validator
-    KFold(n_splits=2, random_state=None, shuffle=False)
+    KFold(n_splits=5, random_state=None, shuffle=False)
 
     for train_index, test_index in kf.split(X):
         X_train, X_test = X[train_index], X[test_index]
@@ -75,7 +75,7 @@ def LinearRegressionKFolds():
 
     X, y = getXY('WholesalePred/data.csv')
     
-    print('\nK-Folds Cross Validation')
+    print('\n5-Folds Cross Validation')
     X_train, X_test, y_train, y_test = KFoldsCrossValidation(X, y)
 
     # Feature Scaling - better results without
@@ -87,7 +87,7 @@ def LinearRegressionKFolds():
 
     y_pred = model.sample_predict(X_test)
     model.get_error(y_test, y_pred)
-    showPlot(y_test, y_pred,"Linear Regression - K-Folds Cross Validation", "WholesalePred/plots/Regression/LinearRegression_KFoldsCrossValidation.png")
+    showPlot(y_test, y_pred,"Linear Regression - 5-Folds Cross Validation", "WholesalePred/plots/Regression/LinearRegression_KFoldsCrossValidation.png")
 
 
 def RandomForestRegression():
@@ -114,7 +114,7 @@ def RandomForestRegressionKFolds():
 
     X, y = getXY('WholesalePred/data.csv')
 
-    print('\nK-Folds Cross Validation')
+    print('\n5-Folds Cross Validation')
     X_train, X_test, y_train, y_test = KFoldsCrossValidation(X, y)
  
     # Feature Scaling - better results with
@@ -125,9 +125,7 @@ def RandomForestRegressionKFolds():
     model.sample_train(X_train, y_train)
     y_pred = model.sample_predict(X_test)
     model.get_error(y_test,y_pred)
-    showPlot(y_test, y_pred,"Random Forest Regression - K-Folds Cross Validation", "WholesalePred/plots/Regression/RandomForestRegression_KFoldsCrossValidation.png")
-
-
+    showPlot(y_test, y_pred,"Random Forest Regression - 5-Folds Cross Validation", "WholesalePred/plots/Regression/RandomForestRegression_KFoldsCrossValidation.png")
 
 def NeuralNetwork():
     dataset = CSVDataset()
@@ -191,7 +189,69 @@ def NeuralNetwork():
     print("Root mean Absolute Error:", rmse)
     print('\n')
 
-    showPlot(actuals, predictions,"Neural Network Regression - Train_test_split", "WholesalePred/plots/Regression/NeuralNetworkRegression_Train_test_split.png")
+def NeuralNetworkKFolds():
+    dataset = CSVDataset()
+
+    train, test = torch.utils.data.random_split(dataset, dataset.get_line_list(23097, 2024)) # 80% train, 20% test
+
+    trainset = torch.utils.data.DataLoader(train, batch_size=32, shuffle=True)
+    testset = torch.utils.data.DataLoader(test, batch_size=1, shuffle=False)
+
+    net = Net()
+
+    optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
+    criterion = torch.nn.L1Loss()
+
+    EPOCHS = 10
+    for epoch in range(EPOCHS):
+        for data in trainset:
+            X, y = data
+            X = X.float()
+
+            optimizer.zero_grad() 
+
+            output = net(X)
+            
+            loss = criterion(output, y.view(-1, 1))
+
+            optimizer.step()
+            
+
+    predictions, actuals = list(), list()
+    with torch.no_grad():
+        for data in testset:
+            X, y = data
+            X = X.float()
+            
+            output = net(X)
+            
+            output = output.detach().numpy()
+
+            actual = y.numpy()
+            actual = actual.reshape((len(actual), 1))
+
+            # print(f"Pred {output}, Actual {actual}")
+
+            predictions.append(output)
+            actuals.append(actual)
+            
+
+        predictions, actuals = vstack(predictions), vstack(actuals)
+        # calculate accuracy
+    
+        mae = mean_absolute_error(actuals, predictions)
+        mse = mean_squared_error(actuals, predictions)
+        rmse = np.sqrt(mean_squared_error(actuals, predictions))
+
+
+    print('\n5-Folds Cross Validation')
+    print('\nNeural Network Regression:')
+    print("Mean Absolute Error:", mae)
+    print("Mean Squared Error:", mse)
+    print("Root mean Absolute Error:", rmse)
+    print('\n')
+
+    # showPlot(actuals, predictions,"Neural Network Regression - Train_test_split", "WholesalePred/plots/Regression/NeuralNetworkRegression_Train_test_split.png")
 
 def RandomForestClassification():
     model = Model("RandomForestClassification", RandomForestClassificationClass())
@@ -218,7 +278,7 @@ def RandomForestClassificationKFolds():
     
     X,y = getXY('WholesalePred/dataClassification.csv')
 
-    print('\nK-Folds Cross Validation')
+    print('\n5-Folds Cross Validation')
     X_train, X_test, y_train, y_test = KFoldsCrossValidation(X, y)
 
     # Feature Scaling
@@ -230,7 +290,7 @@ def RandomForestClassificationKFolds():
     
     y_pred = model.sample_predict(X_test)
     model.get_error(y_test,y_pred)
-    showPlot(y_test, y_pred,"Neural Network Classification - K-Folds Cross Validation", "WholesalePred/plots/Classification/NeuralNetworkClassification_KFoldsCrossValidation.png")
+    showPlot(y_test, y_pred,"Neural Network Classification - 5-Folds Cross Validation", "WholesalePred/plots/Classification/NeuralNetworkClassification_KFoldsCrossValidation.png")
 
 
 def NeuralNetworkClassification():
@@ -258,7 +318,7 @@ def NeuralNetworkClassificationKFolds():
     
     X,y = getXY('WholesalePred/dataClassification.csv')
 
-    print('\nK-Folds Cross Validation')
+    print('\n5-Folds Cross Validation')
     X_train, X_test, y_train, y_test = KFoldsCrossValidation(X, y)
 
     # Feature Scaling
@@ -274,18 +334,19 @@ def NeuralNetworkClassificationKFolds():
 
 print('\nRegression:')
 
-LinearRegression()
+# LinearRegression()
 LinearRegressionKFolds()
 
-RandomForestRegression()
+# RandomForestRegression()
 RandomForestRegressionKFolds()
 
-NeuralNetwork()
+# NeuralNetwork()
+NeuralNetworkKFolds()
 
 print('\nClassification:')
 
-RandomForestClassification() 
+# RandomForestClassification() 
 RandomForestClassificationKFolds() 
 
-NeuralNetworkClassification()
+# NeuralNetworkClassification()
 NeuralNetworkClassificationKFolds()

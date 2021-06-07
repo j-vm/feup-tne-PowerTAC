@@ -4,6 +4,9 @@ from sklearn import metrics
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from matplotlib import pyplot as plt
+import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
+
 
 class RandomForestClassificationClass:
     def __init__(self):
@@ -39,18 +42,21 @@ class RandomForestClassificationClass:
         print('f1_score:', metrics.f1_score(real_value, prediction_value, labels=npy.unique(real_value)))
         print('accuracy:', metrics.accuracy_score(real_value, prediction_value))
 
-        t = list(range(len(f1_score)))
-        if len(t) == 100 or len(t) == 150 or len(t) == 200:
-            plt.plot(t, f1_score, 'r--', t, accuracy, 'bs')
+        timeSlot = len(f1_score)
+        t = list(range(timeSlot))
+        
+        if timeSlot == 99 or timeSlot == 149 or timeSlot == 199 or timeSlot == 249:
+            plt.plot(t, f1_score, 'r--', t, accuracy, 'b^')
+
+            red_patch = mpatches.Patch(color='red', label='F1 score')
+            blue_line = mlines.Line2D([], [], color='blue', marker='^', markersize=15, label='Accuracy')
+            plt.legend(handles=[red_patch,blue_line])
+
             plt.xlabel("Time slot")
             plt.ylabel("Score")
             plt.title("Random Forest Classification Error")
-            if len(t) == 100:
-                plt.savefig("WholesalePred/plots/Classification/RandomForestClassification_Error_100Timeslots.png")  
-            if len(t) == 150:
-                plt.savefig("WholesalePred/plots/Classification/RandomForestClassification_Error_150Timeslots.png") 
-            if len(t) == 200:
-                plt.savefig("WholesalePred/plots/Classification/RandomForestClassification_Error_200Timeslots.png") 
+            plt.savefig("WholesalePred/plots/Classification/RandomForestClassification_Error_" + str(timeSlot) +"Timeslots_with_legend.png")  
+
 
 
     def get_error(self, real_value, prediction_value):

@@ -4,6 +4,8 @@ from sklearn import metrics
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from matplotlib import pyplot as plt
+import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
 
 class RandomForestRegressionClass:
     def __init__(self):
@@ -32,22 +34,21 @@ class RandomForestRegressionClass:
         print('Mean Squared Error:', metrics.mean_squared_error(real_value, prediction_value))
         print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(real_value, prediction_value)))
 
-    
-        t = list(range(len(meanAbsoluteError)))
-
-        if len(t) == 100 or len(t) == 150 or len(t) == 200:
-            plt.plot(t, meanAbsoluteError, 'r--', t, rootMeanSquaredError, 'bs')
+        timeSlot = len(meanAbsoluteError)
+        t = list(range(timeSlot))
+        
+        if timeSlot == 105 or timeSlot == 155 or timeSlot == 205 or timeSlot == 255:
+            plt.plot(t, meanAbsoluteError, 'r--', t, rootMeanSquaredError, 'b^')
             # plt.plot(t, meanAbsoluteError, 'r--', t, meanSquaredError, 'bs', t, rootMeanSquaredError, 'g^')
+
+            red_patch = mpatches.Patch(color='red', label='Mean Absolute Error')
+            blue_line = mlines.Line2D([], [], color='blue', marker='^', markersize=15, label='Root Mean Squared Error')
+            plt.legend(handles=[red_patch,blue_line])
 
             plt.xlabel("Time slot")
             plt.ylabel("Errors")
             plt.title("Random Forest Regression Error")
-            if len(t) == 100:
-                plt.savefig("WholesalePred/plots/Regression/RandomForestRegression_Error_100Timeslots.png")  
-            if len(t) == 150:
-                plt.savefig("WholesalePred/plots/Regression/RandomForestRegression_Error_150Timeslots.png")  
-            if len(t) == 200:
-                plt.savefig("WholesalePred/plots/Regression/RandomForestRegression_Error_200Timeslots.png")  
+            plt.savefig("WholesalePred/plots/Regression/RandomForestRegression_Error_" + str(timeSlot) + "_timeslots_with_legend.png")  
 
 
     def get_error(self, real_value, prediction_value):
